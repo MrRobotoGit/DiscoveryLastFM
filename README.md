@@ -1,7 +1,18 @@
 # DiscoverLastFM    
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/licen### Debug Mode
+Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
+
+## 😊 User Reviews
+
+> *"I for one am happy to wake up on my Sunday to this new music discovery tool."*  
+> **— Shark7809**
+
+> *"Wow! That sounds amazing! For a newbie like me, who is just starting out in the Plexamp world."*  
+> **— Hisxela**
+
+## 📜 License.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.7.6-orange.svg)](CHANGELOG.md)
 
 An automated music discovery tool that integrates Last.fm, MusicBrainz, and Headphones to discover and queue new albums based on your listening history.
