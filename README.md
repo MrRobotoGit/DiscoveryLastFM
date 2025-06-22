@@ -1,18 +1,7 @@
 # DiscoverLastFM    
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/licen### Debug Mode
-Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
-
-## 😊 User Reviews
-
-> *"I for one am happy to wake up on my Sunday to this new music discovery tool."*  
-> **— Shark7809**
-
-> *"Wow! That sounds amazing! For a newbie like me, who is just starting out in the Plexamp world."*  
-> **— Hisxela**
-
-## 📜 License.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.7.6-orange.svg)](CHANGELOG.md)
 
 An automated music discovery tool that integrates Last.fm, MusicBrainz, and Headphones to discover and queue new albums based on your listening history.
@@ -125,7 +114,6 @@ DiscoverLastfm/
 ├── .gitignore                  # Git ignore file
 ├── README.md                   # This file
 ├── CHANGELOG.md                # Version history
-
 ```
 
 ## 🔧 API Integration
@@ -173,7 +161,7 @@ The script includes robust error handling:
 ### Debug Mode
 Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 
-## � User Reviews
+## 😊 User Reviews
 
 > *"I for one am happy to wake up on my Sunday to this new music discovery tool."*  
 > **— Shark7809**
@@ -181,7 +169,7 @@ Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 > *"Wow! That sounds amazing! For a newbie like me, who is just starting out in the Plexamp world."*  
 > **— Hisxela**
 
-## �📜 License
+## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -214,4 +202,3 @@ If you encounter any issues or have questions:
 ---
 
 **Note**: This tool is designed for personal use. Please respect the terms of service of all integrated APIs and services.
-
