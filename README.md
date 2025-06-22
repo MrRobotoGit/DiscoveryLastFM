@@ -175,6 +175,9 @@ Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 > *"I'm excited to try this. I've already pulled in a few recommendations and can't wait to let the script keep running to see what else it uncovers."*  
 > **— mush0uth2**
 
+> *"This is incredible! I'm in the middle of setting things up and was wandering if such thing existed, you made my day!!"*  
+> **— williewaller**
+
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
