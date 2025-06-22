@@ -162,7 +162,15 @@ The script includes robust error handling:
 ### Debug Mode
 Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 
-## 📜 License
+## � User Reviews
+
+> *"I for one am happy to wake up on my Sunday to this new music discovery tool."*  
+> **— Shark7809**
+
+> *"Wow! That sounds amazing! For a newbie like me, who is just starting out in the Plexamp world."*  
+> **— Hisxela**
+
+## �📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
