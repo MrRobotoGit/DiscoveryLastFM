@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # DiscoverLastfm
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
@@ -186,3 +187,6 @@ If you encounter any issues or have questions:
 
 **Note**: This tool is designed for personal use. Please respect the terms of service of all integrated APIs and services.
 # DiscoveryLastFM
+=======
+# DiscoveryLastFM
+>>>>>>> e1d90867d034fbdb7e29a9cfe39df955f9867567
