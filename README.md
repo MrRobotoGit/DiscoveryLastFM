@@ -17,6 +17,15 @@ An automated music discovery tool that integrates Last.fm, MusicBrainz, and Head
 - **Rate Limiting**: Respects API rate limits for all services
 - **Comprehensive Logging**: Detailed logging both to console and file
 
+## 🛠️ How It Works
+
+1. **Fetch Recent Artists**: Retrieves artists you've listened to recently on Last.fm
+2. **Find Similar Artists**: Discovers similar artists using Last.fm's recommendation engine
+3. **Add to Headphones**: Automatically adds both original and similar artists to your Headphones library
+4. **Queue Top Albums**: Fetches and queues the most popular studio albums from each artist
+5. **Smart Filtering**: Uses MusicBrainz metadata to filter out non-studio releases
+6. **Cache Management**: Maintains cache to optimize performance and avoid duplicates
+
 ## 😊 User Reviews
 
 > *"I for one am happy to wake up on my Sunday to this new music discovery tool."*  
@@ -33,15 +42,6 @@ An automated music discovery tool that integrates Last.fm, MusicBrainz, and Head
 
 > *"This is incredible! I'm in the middle of setting things up and was wandering if such thing existed, you made my day!!"*  
 > **— williewaller**
-
-## 🛠️ How It Works
-
-1. **Fetch Recent Artists**: Retrieves artists you've listened to recently on Last.fm
-2. **Find Similar Artists**: Discovers similar artists using Last.fm's recommendation engine
-3. **Add to Headphones**: Automatically adds both original and similar artists to your Headphones library
-4. **Queue Top Albums**: Fetches and queues the most popular studio albums from each artist
-5. **Smart Filtering**: Uses MusicBrainz metadata to filter out non-studio releases
-6. **Cache Management**: Maintains cache to optimize performance and avoid duplicates
 
 ## 📋 Prerequisites
 
