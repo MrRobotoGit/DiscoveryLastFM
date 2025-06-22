@@ -1,4 +1,4 @@
-# Example configuration file
+# Example configuration file for DiscoveryLastFM
 # Copy this to config.py and fill in your actual values
 
 LASTFM_USERNAME = "your_lastfm_username"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DiscoverLastfm.py · v1.7.6
+DiscoveryLastFM.py · v1.7.6
 – Integra Last.fm, MusicBrainz e Headphones per scoprire e accodare album
 – Usa Release Group ID (RGID) quando possibile, fallback su Release-ID
 – Evita duplicati con controllo getAlbum e registro persistente added_albums

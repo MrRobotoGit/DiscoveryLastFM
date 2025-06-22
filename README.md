@@ -1,4 +1,4 @@
-# DiscoverLastFM    
+# DiscoveryLastFM    
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -38,7 +38,7 @@ An automated music discovery tool that integrates Last.fm, MusicBrainz, and Head
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/MrRobotoGit/DiscoveryLastFM.git
-   cd DiscoverLastfm
+   cd DiscoveryLastFM
    ```
 
 2. **Install dependencies**:
@@ -79,14 +79,14 @@ The script offers several configurable parameters:
 
 ### Manual Execution
 ```bash
-python3 DiscoverLastfm.py
+python3 DiscoveryLastFM.py
 ```
 
 ### Automated Execution (Cron)
 Set up a daily cron job for automated discovery:
 ```bash
 # Run daily at 3:00 AM
-0 3 * * * python3 /path/to/DiscoverLastfm/DiscoverLastfm.py >> /path/to/DiscoverLastfm/log/discover.log 2>&1
+0 3 * * * python3 /path/to/DiscoveryLastFM/DiscoveryLastFM.py >> /path/to/DiscoveryLastFM/log/discover.log 2>&1
 ```
 
 ## 📊 Sample Output
@@ -106,8 +106,8 @@ Set up a daily cron job for automated discovery:
 ## 📁 Project Structure
 
 ```
-DiscoverLastfm/
-├── DiscoverLastfm.py           # Main script
+DiscoveryLastFM/
+├── DiscoveryLastFM.py          # Main script
 ├── config.example.py           # Example configuration file
 ├── config.py                   # Your configuration (not in git)
 ├── lastfm_similar_cache.json   # Cache file for artists and albums (not in git)
