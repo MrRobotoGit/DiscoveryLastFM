@@ -169,6 +169,9 @@ Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 > *"Wow! That sounds amazing! For a newbie like me, who is just starting out in the Plexamp world."*  
 > **— Hisxela**
 
+> *"This is something I've been looking for actually."*  
+> **— AlteRedditor**
+
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
