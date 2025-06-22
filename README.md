@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.7.7-orange.svg)](CHANGELOG.md)
 
-An automated music discovery tool that integrates Last.fm, MusicBrainz, and Headphones to discover and queue new albums based on your listening history.
+An automated music discovery tool that integrates Last.fm, MusicBrainz, and Headphones to discover and queue new albums on torrent based on your listening history.
 
 > **📝 Note**: This tool doesn't require Plex or any specific media server. While it currently integrates with Headphones, it can be easily adapted to work with any music management system like Plex, Jellyfin, Navidrome, or others.
 
