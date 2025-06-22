@@ -219,5 +219,8 @@ If you encounter any issues or have questions:
 3. Open an issue on GitHub with relevant log excerpts
 
 ---
+---
+
+*Concept and development by [Matteo Rancilio](https://github.com/MrRobotoGit).*
 
 **Note**: This tool is designed for personal use. Please respect the terms of service of all integrated APIs and services.
