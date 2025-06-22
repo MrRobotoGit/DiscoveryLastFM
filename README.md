@@ -2,7 +2,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.7.6-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.7.7-orange.svg)](CHANGELOG.md)
 
 An automated music discovery tool that integrates Last.fm, MusicBrainz, and Headphones to discover and queue new albums based on your listening history.
 

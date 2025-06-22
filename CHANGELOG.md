@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.7] - 2025-06-22
+
+### Changed
+- **BREAKING**: Project renamed from `DiscoverLastfm` to `DiscoveryLastFM`
+- Main script renamed from `DiscoverLastfm.py` to `DiscoveryLastFM.py`
+- Directory structure updated to use consistent `DiscoveryLastFM` naming
+- Updated all documentation to reflect new naming convention
+- Cronjob updated to point to new script path and name
+- Repository URL updated to `https://github.com/MrRobotoGit/DiscoveryLastFM`
+
+### Fixed
+- All internal references updated to use consistent naming
+- Documentation and examples updated with correct naming
+
 ## [1.7.6] - 2025-06-22
 
 ### Added
