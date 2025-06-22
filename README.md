@@ -17,6 +17,23 @@ An automated music discovery tool that integrates Last.fm, MusicBrainz, and Head
 - **Rate Limiting**: Respects API rate limits for all services
 - **Comprehensive Logging**: Detailed logging both to console and file
 
+## 😊 User Reviews
+
+> *"I for one am happy to wake up on my Sunday to this new music discovery tool."*  
+> **— Shark7809**
+
+> *"Wow! That sounds amazing! For a newbie like me, who is just starting out in the Plexamp world."*  
+> **— Hisxela**
+
+> *"This is something I've been looking for actually."*  
+> **— AlteRedditor**
+
+> *"I'm excited to try this. I've already pulled in a few recommendations and can't wait to let the script keep running to see what else it uncovers."*  
+> **— mush0uth2**
+
+> *"This is incredible! I'm in the middle of setting things up and was wandering if such thing existed, you made my day!!"*  
+> **— williewaller**
+
 ## 🛠️ How It Works
 
 1. **Fetch Recent Artists**: Retrieves artists you've listened to recently on Last.fm
@@ -162,23 +179,6 @@ The script includes robust error handling:
 
 ### Debug Mode
 Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
-
-## 😊 User Reviews
-
-> *"I for one am happy to wake up on my Sunday to this new music discovery tool."*  
-> **— Shark7809**
-
-> *"Wow! That sounds amazing! For a newbie like me, who is just starting out in the Plexamp world."*  
-> **— Hisxela**
-
-> *"This is something I've been looking for actually."*  
-> **— AlteRedditor**
-
-> *"I'm excited to try this. I've already pulled in a few recommendations and can't wait to let the script keep running to see what else it uncovers."*  
-> **— mush0uth2**
-
-> *"This is incredible! I'm in the middle of setting things up and was wandering if such thing existed, you made my day!!"*  
-> **— williewaller**
 
 ## 📜 License
 
