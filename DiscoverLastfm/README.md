@@ -185,3 +185,4 @@ If you encounter any issues or have questions:
 ---
 
 **Note**: This tool is designed for personal use. Please respect the terms of service of all integrated APIs and services.
+# DiscoveryLastFM
