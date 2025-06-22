@@ -3,6 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.7.7-orange.svg)](CHANGELOG.md)
+[![Star](https://img.shields.io/github/stars/MrRobotoGit/DiscoveryLastFM?style=social)](https://github.com/MrRobotoGit/DiscoveryLastFM)
 
 An automated music discovery tool that integrates Last.fm, MusicBrainz, and Headphones to discover and queue new albums via torrent based on your listening history.
 
@@ -180,7 +181,14 @@ The script includes robust error handling:
 ### Debug Mode
 Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 
-## 📜 License
+## �️ Roadmap
+
+✔️ **Headphones support** - Complete integration with Headphones API  
+🔜 **Lidarr support** - Modern alternative music management system  
+🔜 **CSV export** - Export discovered music data for analysis  
+🔜 **Public API** - RESTful API for self-hosted clients and integrations
+
+## �📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
