@@ -35,7 +35,7 @@ An automated music discovery tool that integrates Last.fm, MusicBrainz, and Head
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/DiscoverLastfm.git
+   git clone https://github.com/MrRobotoGit/DiscoverLastfm.git
    cd DiscoverLastfm
    ```
 
@@ -185,4 +185,3 @@ If you encounter any issues or have questions:
 ---
 
 **Note**: This tool is designed for personal use. Please respect the terms of service of all integrated APIs and services.
-# DiscoveryLastFM
