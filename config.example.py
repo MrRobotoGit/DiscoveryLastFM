@@ -42,20 +42,20 @@ HP_ENDPOINT = "http://your-headphones-server:port"
 # LIDARR_TIMEOUT = 60
 
 # === DISCOVERY PARAMETERS ===
-# RECENT_MONTHS = 3              # Months of recent plays to analyze
-# MIN_PLAYS = 20                 # Minimum plays to consider an artist
-# SIMILAR_MATCH_MIN = 0.46       # Minimum similarity match threshold
-# MAX_SIMILAR_PER_ART = 20       # Max similar artists per artist
-# MAX_POP_ALBUMS = 5             # Max popular albums to fetch per artist
-# CACHE_TTL_HOURS = 24           # Cache time-to-live in hours
+RECENT_MONTHS = 3              # Months of recent plays to analyze
+MIN_PLAYS = 20                 # Minimum plays to consider an artist
+SIMILAR_MATCH_MIN = 0.43       # Minimum similarity match threshold
+MAX_SIMILAR_PER_ART = 20       # Max similar artists per artist
+MAX_POP_ALBUMS = 5             # Max popular albums to fetch per artist
+CACHE_TTL_HOURS = 48           # Cache time-to-live in hours
 
 # === API RATE LIMITING ===
-# REQUEST_LIMIT = 1/5            # Last.fm requests per second (5 requests/5 seconds)
-# MBZ_DELAY = 1.1                # MusicBrainz delay between requests (seconds)
+REQUEST_LIMIT = 1/5            # Last.fm requests per second (5 requests/5 seconds)
+MBZ_DELAY = 1.1                # MusicBrainz delay between requests (seconds)
 
 # === DEBUGGING ===
 # DEBUG_PRINT = True             # Enable debug print statements
 
 # === SYSTEM CONFIGURATION ===
-# VALIDATE_CONFIG_ON_STARTUP = True    # Validate configuration on startup
-# ENABLE_CACHE_MIGRATION = True        # Auto-migrate cache format if needed
+VALIDATE_CONFIG_ON_STARTUP = True    # Validate configuration on startup
+ENABLE_CACHE_MIGRATION = True        # Auto-migrate cache format if needed
