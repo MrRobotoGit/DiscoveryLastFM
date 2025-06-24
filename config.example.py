@@ -18,28 +18,28 @@ HP_API_KEY = "your_headphones_api_key"
 HP_ENDPOINT = "http://your-headphones-server:port"
 
 # Headphones Advanced Options
-# HP_MAX_RETRIES = 3
-# HP_RETRY_DELAY = 5
-# HP_TIMEOUT = 60
+HP_MAX_RETRIES = 3
+HP_RETRY_DELAY = 5
+HP_TIMEOUT = 60
 
 # === LIDARR CONFIGURATION ===
-# Required if MUSIC_SERVICE = "lidarr"
-# LIDARR_API_KEY = "your_lidarr_api_key"
-# LIDARR_ENDPOINT = "http://your-lidarr-server:port"
-# LIDARR_ROOT_FOLDER = "/music"
+Required if MUSIC_SERVICE = "lidarr"
+LIDARR_API_KEY = "your_lidarr_api_key"
+LIDARR_ENDPOINT = "http://your-lidarr-server:port"
+LIDARR_ROOT_FOLDER = "/music"
 
 # Lidarr Profile Configuration
-# LIDARR_QUALITY_PROFILE_ID = 2  # ID of quality profile (1=Any, 2=Lossless, 3=Standard)
-# LIDARR_METADATA_PROFILE_ID = 1  # ID of metadata profile (1=Standard, 2=None)
+LIDARR_QUALITY_PROFILE_ID = 2  # ID of quality profile (1=Any, 2=Lossless, 3=Standard)
+LIDARR_METADATA_PROFILE_ID = 1  # ID of metadata profile (1=Standard, 2=None)
 
 # Lidarr Behavior Configuration
-# LIDARR_MONITOR_MODE = "all"  # "all", "future", "missing", "existing", "first", "latest", "none"
-# LIDARR_SEARCH_ON_ADD = True  # Auto-search when adding artists/albums
+LIDARR_MONITOR_MODE = "all"  # "all", "future", "missing", "existing", "first", "latest", "none"
+LIDARR_SEARCH_ON_ADD = True  # Auto-search when adding artists/albums
 
 # Lidarr Advanced Options
-# LIDARR_MAX_RETRIES = 3
-# LIDARR_RETRY_DELAY = 5
-# LIDARR_TIMEOUT = 60
+LIDARR_MAX_RETRIES = 3
+LIDARR_RETRY_DELAY = 5
+LIDARR_TIMEOUT = 60
 
 # === DISCOVERY PARAMETERS ===
 RECENT_MONTHS = 3              # Months of recent plays to analyze
