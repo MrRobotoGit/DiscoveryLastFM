@@ -4,6 +4,9 @@ config.py
 # Documentation (contains project-specific details and credentials)
 # CLAUDE.md
 
+# Git mailmap (contains sensitive attribution mappings)
+.mailmap
+
 # Logs
 log/
 *.log
