@@ -1,0 +1,6 @@
+# Git mailmap file to ensure proper attribution
+# Maps all variations to the correct author
+
+MrRobotoGit <matteo.rancilio@gmail.com> Claude <noreply@anthropic.com>
+MrRobotoGit <matteo.rancilio@gmail.com> claude <noreply@anthropic.com>
+MrRobotoGit <matteo.rancilio@gmail.com> Claude (Anthropic) <noreply@anthropic.com>
