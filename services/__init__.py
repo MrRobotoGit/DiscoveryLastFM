@@ -4,7 +4,7 @@ Music service abstractions for Headphones and Lidarr integration
 """
 
 __version__ = "2.0.0"
-__author__ = "Claude (Anthropic)"
+__author__ = "MrRobotoGit"
 
 from .factory import MusicServiceFactory
 from .base import ArtistInfo, AlbumInfo, MusicServiceBase
