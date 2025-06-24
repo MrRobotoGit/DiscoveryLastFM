@@ -11,42 +11,42 @@
 
 ## 🚀 What's New in v2.0
 
-- **🎯 Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
-- **🏗️ Modular Architecture**: Clean service layer for easy extensibility
-- **🔄 Zero Breaking Changes**: Existing Headphones users continue without modifications
-- **⚙️ Advanced Configuration**: Enhanced quality and metadata profile management for Lidarr
-- **🛡️ Robust Error Handling**: Improved retry logic and connection management
-- **📊 Service Parity**: Identical functionality across both music management services
+- **Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
+- **Modular Architecture**: Clean service layer for easy extensibility
+- **Zero Breaking Changes**: Existing Headphones users continue without modifications
+- **Advanced Configuration**: Enhanced quality and metadata profile management for Lidarr
+- **Robust Error Handling**: Improved retry logic and connection management
+- **Service Parity**: Identical functionality across both music management services
 
 ## 🎵 Features
 
 ### Core Discovery Engine
-- **🎯 Smart Discovery**: Analyzes your Last.fm listening history to find similar artists
-- **🎭 Quality Filtering**: Only queues studio albums, excluding compilations, live albums, EPs, etc.
-- **🚫 Duplicate Prevention**: Maintains persistent cache to avoid adding albums multiple times
-- **📊 Comprehensive Logging**: Detailed logging both to console and file
+- **Smart Discovery**: Analyzes your Last.fm listening history to find similar artists
+- **Quality Filtering**: Only queues studio albums, excluding compilations, live albums, EPs, etc.
+- **Duplicate Prevention**: Maintains persistent cache to avoid adding albums multiple times
+- **Comprehensive Logging**: Detailed logging both to console and file
 
 ### Service Integration
-- **🎵 Dual Service Support**: Seamlessly works with both **Headphones** and **Lidarr**
-- **🔄 Easy Service Switching**: Change between services with a single configuration parameter
-- **⚙️ Quality Profiles**: Advanced quality and metadata profile management (Lidarr)
-- **📂 Folder Management**: Automatic root folder and library organization
+- **Dual Service Support**: Seamlessly works with both **Headphones** and **Lidarr**
+- **Easy Service Switching**: Change between services with a single configuration parameter
+- **Quality Profiles**: Advanced quality and metadata profile management (Lidarr)
+- **Folder Management**: Automatic root folder and library organization
 
 ### Technical Excellence  
-- **🛡️ Robust API Handling**: Built-in retry mechanisms with exponential backoff
-- **⏱️ Rate Limiting**: Respects API rate limits for all services
-- **🏗️ Modular Architecture**: Clean, extensible service layer design
-- **🔧 Configuration Validation**: Startup validation ensures proper setup
+- **Robust API Handling**: Built-in retry mechanisms with exponential backoff
+- **Rate Limiting**: Respects API rate limits for all services
+- **Modular Architecture**: Clean, extensible service layer design
+- **Configuration Validation**: Startup validation ensures proper setup
 
 ## 🛠️ How It Works
 
-1. **🎧 Fetch Recent Artists**: Retrieves artists you've listened to recently on Last.fm
-2. **🔍 Find Similar Artists**: Discovers similar artists using Last.fm's recommendation engine  
-3. **➕ Add to Music Service**: Automatically adds both original and similar artists to your chosen service (Headphones/Lidarr)
-4. **💿 Queue Top Albums**: Fetches and queues the most popular studio albums from each artist
-5. **🎭 Smart Filtering**: Uses MusicBrainz metadata to filter out non-studio releases
-6. **💾 Cache Management**: Maintains cache to optimize performance and avoid duplicates
-7. **🔄 Service Integration**: Seamlessly works with your chosen music management service
+1. **Fetch Recent Artists**: Retrieves artists you've listened to recently on Last.fm
+2. **Find Similar Artists**: Discovers similar artists using Last.fm's recommendation engine  
+3. **Add to Music Service**: Automatically adds both original and similar artists to your chosen service (Headphones/Lidarr)
+4. **Queue Top Albums**: Fetches and queues the most popular studio albums from each artist
+5. **Smart Filtering**: Uses MusicBrainz metadata to filter out non-studio releases
+6. **Cache Management**: Maintains cache to optimize performance and avoid duplicates
+7. **Service Integration**: Seamlessly works with your chosen music management service
 
 ## 😊 User Reviews
 
