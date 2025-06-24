@@ -23,7 +23,7 @@ HP_RETRY_DELAY = 5
 HP_TIMEOUT = 60
 
 # === LIDARR CONFIGURATION ===
-Required if MUSIC_SERVICE = "lidarr"
+# Used if MUSIC_SERVICE = "lidarr"
 LIDARR_API_KEY = "your_lidarr_api_key"
 LIDARR_ENDPOINT = "http://your-lidarr-server:port"
 LIDARR_ROOT_FOLDER = "/music"
