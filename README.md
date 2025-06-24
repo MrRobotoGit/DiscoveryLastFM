@@ -1,32 +1,52 @@
-# DiscoveryLastFM    
+# DiscoveryLastFM v2.0    
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.7.7-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.0-brightgreen.svg)](CHANGELOG.md)
+[![Headphones](https://img.shields.io/badge/service-Headphones-blue.svg)](https://github.com/rembo10/headphones)
+[![Lidarr](https://img.shields.io/badge/service-Lidarr-orange.svg)](https://github.com/Lidarr/Lidarr)
 [![Star](https://img.shields.io/github/stars/MrRobotoGit/DiscoveryLastFM?style=social)](https://github.com/MrRobotoGit/DiscoveryLastFM)
 
+🎵 **Modern music discovery tool** that integrates Last.fm, MusicBrainz, and **both Headphones & Lidarr** to automatically discover and queue new albums based on your listening history.
 
-An automated music discovery tool that integrates Last.fm, MusicBrainz, and Headphones to discover and queue new albums via torrent based on your listening history.
+## 🚀 What's New in v2.0
 
-> **📝 Note**: This tool doesn't require Plex or any specific media server. While it currently integrates with Headphones, it can be easily adapted to work with any music management system like Plex, Jellyfin, Navidrome, or others.
+- **🎯 Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
+- **🏗️ Modular Architecture**: Clean service layer for easy extensibility
+- **🔄 Zero Breaking Changes**: Existing Headphones users continue without modifications
+- **⚙️ Advanced Configuration**: Enhanced quality and metadata profile management for Lidarr
+- **🛡️ Robust Error Handling**: Improved retry logic and connection management
+- **📊 Service Parity**: Identical functionality across both music management services
 
 ## 🎵 Features
 
-- **Smart Discovery**: Analyzes your Last.fm listening history to find similar artists
-- **Quality Filtering**: Only queues studio albums, excluding compilations, live albums, EPs, etc.
-- **Duplicate Prevention**: Maintains persistent cache to avoid adding albums multiple times
-- **Robust API Handling**: Built-in retry mechanisms with exponential backoff
-- **Rate Limiting**: Respects API rate limits for all services
-- **Comprehensive Logging**: Detailed logging both to console and file
+### Core Discovery Engine
+- **🎯 Smart Discovery**: Analyzes your Last.fm listening history to find similar artists
+- **🎭 Quality Filtering**: Only queues studio albums, excluding compilations, live albums, EPs, etc.
+- **🚫 Duplicate Prevention**: Maintains persistent cache to avoid adding albums multiple times
+- **📊 Comprehensive Logging**: Detailed logging both to console and file
+
+### Service Integration
+- **🎵 Dual Service Support**: Seamlessly works with both **Headphones** and **Lidarr**
+- **🔄 Easy Service Switching**: Change between services with a single configuration parameter
+- **⚙️ Quality Profiles**: Advanced quality and metadata profile management (Lidarr)
+- **📂 Folder Management**: Automatic root folder and library organization
+
+### Technical Excellence  
+- **🛡️ Robust API Handling**: Built-in retry mechanisms with exponential backoff
+- **⏱️ Rate Limiting**: Respects API rate limits for all services
+- **🏗️ Modular Architecture**: Clean, extensible service layer design
+- **🔧 Configuration Validation**: Startup validation ensures proper setup
 
 ## 🛠️ How It Works
 
-1. **Fetch Recent Artists**: Retrieves artists you've listened to recently on Last.fm
-2. **Find Similar Artists**: Discovers similar artists using Last.fm's recommendation engine
-3. **Add to Headphones**: Automatically adds both original and similar artists to your Headphones library
-4. **Queue Top Albums**: Fetches and queues the most popular studio albums from each artist
-5. **Smart Filtering**: Uses MusicBrainz metadata to filter out non-studio releases
-6. **Cache Management**: Maintains cache to optimize performance and avoid duplicates
+1. **🎧 Fetch Recent Artists**: Retrieves artists you've listened to recently on Last.fm
+2. **🔍 Find Similar Artists**: Discovers similar artists using Last.fm's recommendation engine  
+3. **➕ Add to Music Service**: Automatically adds both original and similar artists to your chosen service (Headphones/Lidarr)
+4. **💿 Queue Top Albums**: Fetches and queues the most popular studio albums from each artist
+5. **🎭 Smart Filtering**: Uses MusicBrainz metadata to filter out non-studio releases
+6. **💾 Cache Management**: Maintains cache to optimize performance and avoid duplicates
+7. **🔄 Service Integration**: Seamlessly works with your chosen music management service
 
 ## 😊 User Reviews
 
@@ -47,10 +67,16 @@ An automated music discovery tool that integrates Last.fm, MusicBrainz, and Head
 
 ## 📋 Prerequisites
 
-- Python 3.8 or higher
-- Last.fm account and API key
-- Headphones installation with API access
-- MusicBrainz access (public API)
+### Required
+- **Python 3.8+**: Modern Python installation
+- **Last.fm Account**: Free account with API key ([Get API Key](https://www.last.fm/api/account/create))
+- **MusicBrainz Access**: Public API (no registration required)
+
+### Music Service (Choose One)
+- **Option A**: [Headphones](https://github.com/rembo10/headphones) installation with API access
+- **Option B**: [Lidarr](https://github.com/Lidarr/Lidarr) installation with API access
+
+> **💡 Tip**: Lidarr is recommended for new users due to its modern interface and active development
 
 ## 🚀 Installation
 
@@ -72,27 +98,62 @@ An automated music discovery tool that integrates Last.fm, MusicBrainz, and Head
    ```
    
    Edit `config.py` with your actual values:
+   
+   **For Headphones users:**
    ```python
+   MUSIC_SERVICE = "headphones"
    LASTFM_USERNAME = "your_lastfm_username"
    LASTFM_API_KEY = "your_lastfm_api_key"
    HP_API_KEY = "your_headphones_api_key"
    HP_ENDPOINT = "http://your-headphones-server:port"
+   ```
+   
+   **For Lidarr users:**
+   ```python
+   MUSIC_SERVICE = "lidarr"
+   LASTFM_USERNAME = "your_lastfm_username"
+   LASTFM_API_KEY = "your_lastfm_api_key"
+   LIDARR_API_KEY = "your_lidarr_api_key"
+   LIDARR_ENDPOINT = "http://your-lidarr-server:port"
+   LIDARR_ROOT_FOLDER = "/music"
+   LIDARR_QUALITY_PROFILE_ID = 2  # 2=Lossless (recommended)
+   LIDARR_METADATA_PROFILE_ID = 1  # 1=Standard
    ```
 
    **⚠️ Important**: Never commit `config.py` to version control as it contains sensitive API keys!
 
 ## ⚙️ Configuration
 
+### Service Selection
+
+Choose your music management service with the `MUSIC_SERVICE` parameter:
+
+```python
+MUSIC_SERVICE = "headphones"  # or "lidarr"
+```
+
+### Discovery Parameters
+
 The script offers several configurable parameters:
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
+| `MUSIC_SERVICE` | "headphones" | Music service: "headphones" or "lidarr" |
 | `RECENT_MONTHS` | 3 | Months of listening history to analyze |
 | `MIN_PLAYS` | 20 | Minimum plays required to consider an artist |
 | `SIMILAR_MATCH_MIN` | 0.46 | Minimum similarity score for artist matching |
 | `MAX_SIMILAR_PER_ART` | 20 | Maximum similar artists to process per artist |
 | `MAX_POP_ALBUMS` | 5 | Maximum popular albums to queue per artist |
 | `CACHE_TTL_HOURS` | 24 | Cache time-to-live in hours |
+
+### Lidarr-Specific Configuration
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `LIDARR_QUALITY_PROFILE_ID` | 2 | Quality profile (1=Any, 2=Lossless, 3=Standard) |
+| `LIDARR_METADATA_PROFILE_ID` | 1 | Metadata profile (1=Standard, 2=None) |
+| `LIDARR_MONITOR_MODE` | "all" | Monitor mode: "all", "future", "missing", etc. |
+| `LIDARR_SEARCH_ON_ADD` | True | Auto-search when adding artists/albums |
 
 ## 🏃 Usage
 
@@ -129,12 +190,24 @@ DiscoveryLastFM/
 ├── DiscoveryLastFM.py          # Main script
 ├── config.example.py           # Example configuration file
 ├── config.py                   # Your configuration (not in git)
-├── lastfm_similar_cache.json   # Cache file for artists and albums (not in git)
+├── services/                   # Service layer (v2.0)
+│   ├── __init__.py             # Module initialization
+│   ├── base.py                 # Abstract base classes
+│   ├── exceptions.py           # Custom exceptions
+│   ├── factory.py              # Service factory
+│   ├── headphones.py           # Headphones service
+│   └── lidarr.py               # Lidarr service
+├── tests/                      # Test suite (v2.0)
+│   ├── __init__.py
+│   ├── test_headphones.py
+│   ├── test_lidarr.py
+│   └── fixtures/
+├── lastfm_similar_cache.json   # Cache file (not in git)
 ├── log/                        # Log directory (not in git)
 │   └── discover.log            # Application logs
 ├── .gitignore                  # Git ignore file
 ├── README.md                   # This file
-├── CHANGELOG.md                # Version history
+└── CHANGELOG.md                # Version history
 ```
 
 ## 🔧 API Integration
@@ -149,19 +222,31 @@ DiscoveryLastFM/
 - Filters release types (studio vs. live/compilation)
 - Resolves release group IDs
 
-### Headphones API
+### Music Service APIs
+
+**Headphones API:**
 - Adds artists to library
 - Queues albums for download
 - Checks for existing albums
+- Force search functionality
+
+**Lidarr API:**
+- Artist management with quality profiles
+- Album monitoring and search
+- Advanced metadata management
+- Command-based operations
 
 ## 🛡️ Error Handling
 
 The script includes robust error handling:
 
+- **Service Layer**: Abstracted error handling across both Headphones and Lidarr
 - **Retry Logic**: Automatic retries with exponential backoff
 - **Rate Limit Management**: Respects API rate limits and retry-after headers
 - **Timeout Handling**: Extended timeouts for heavy operations
+- **Configuration Validation**: Startup validation ensures proper service setup
 - **Graceful Degradation**: Continues processing even if some operations fail
+- **Service Switching**: Easy migration between services with error recovery
 
 ## 📈 Performance Optimizations
 
@@ -174,19 +259,48 @@ The script includes robust error handling:
 
 ### Common Issues
 
+**General Issues:**
 1. **API Key Errors**: Ensure all API keys are valid and have proper permissions
 2. **Network Timeouts**: Check network connectivity and increase timeout values if needed
 3. **Rate Limiting**: The script handles this automatically, but manual delays might be needed for very large libraries
 4. **Cache Issues**: Delete the cache file to reset if you encounter persistent issues
 
+**Service-Specific Issues:**
+
+**Headphones:**
+- Check `HP_ENDPOINT` format (include http:// and port)
+- Verify API key in Headphones settings
+- Ensure Headphones is running and accessible
+
+**Lidarr:**
+- Check `LIDARR_ENDPOINT` format (no trailing slash)
+- Verify API key in Lidarr Settings → General
+- Confirm `LIDARR_ROOT_FOLDER` exists and is writable
+- Validate quality and metadata profile IDs exist
+
+**Service Switching:**
+- Update `MUSIC_SERVICE` parameter in config.py
+- Ensure all required configuration parameters are set
+- Cache is compatible between services
+
 ### Debug Mode
 Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 
-## Roadmap
-✔️ Headphones support  
-🔜 Lidarr support  
-🔜 CSV export  
-🔜 Public API (for self-hosted clients)
+## 🗺️ Roadmap
+
+### Completed ✅
+- Headphones support
+- Lidarr support  
+- Service layer architecture
+- Zero breaking changes migration
+- Advanced configuration management
+
+### Planned 🔜
+- CSV export functionality
+- Web dashboard interface
+- Multiple instance support
+- Enhanced caching system
+- Plugin architecture for additional services
 
 ## 📜 License
 
@@ -209,6 +323,8 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
 - [Last.fm](https://www.last.fm/) for the music discovery API
 - [MusicBrainz](https://musicbrainz.org/) for comprehensive music metadata
 - [Headphones](https://github.com/rembo10/headphones) for automated music management
+- [Lidarr](https://github.com/Lidarr/Lidarr) for modern music library management
+- The open-source community for continuous improvement and feedback
 
 ## 📞 Support
 

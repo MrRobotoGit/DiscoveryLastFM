@@ -1,16 +1,29 @@
 # Configuration with sensitive data
 config.py
 
-# Documentation (contains project-specific details)
+# Documentation (contains project-specific details and credentials)
 CLAUDE.md
 
 # Logs
 log/
 *.log
 
-# Cache files
+# Cache files and data
 lastfm_similar_cache.json
-__pycache__
+*.db
+*.cache
+
+# Specific cache/data files (but allow test fixtures)
+*_cache.json
+*_data.json
+
+# Backup files and directories
+backup/
+*.bak
+*.backup
+*.old
+*_v1.py
+DiscoveryLastFM_v1.py
 
 # Python
 __pycache__/
@@ -33,13 +46,27 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
+.coverage
+htmlcov/
 
-# IDE
+# Testing
+tests/__pycache__/
+.tox/
+.pytest_cache/
+test_results/
+coverage.xml
+*.cover
+.coverage.*
+
+# IDE and editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.sublime-project
+.sublime-workspace
 
 # OS
 .DS_Store
@@ -50,7 +77,28 @@ wheels/
 ehthumbs.db
 Thumbs.db
 
-# Backup files
-*.bak
-*.backup
-*.old
+# Environment and virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+temp/
+
+# Local development files
+local_*
+dev_*
+test_*
+debug_*
+
+# Documentation build
+docs/_build/
+docs/build/
+site/

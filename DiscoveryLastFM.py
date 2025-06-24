@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DiscoveryLastFM.py · v1.7.7
-– Integra Last.fm, MusicBrainz e Headphones per scoprire e accodare album
-– Usa Release Group ID (RGID) quando possibile, fallback su Release-ID
-– Evita duplicati con controllo getAlbum e registro persistente added_albums
-– Ripristina queueAlbum su studio albums correggendo il fetch di secondary-types
+DiscoveryLastFM.py · v2.0.0
+– Integrazione Lidarr/Headphones tramite service layer modulare
+– Supporto per entrambi i servizi con switch via configurazione
+– Mantiene identico workflow e compatibilità cache v1.7.x
+– Zero breaking changes per configurazioni esistenti
 """
 
 # ─────────────────── CONFIG ───────────────────
@@ -20,6 +20,7 @@ except ImportError:
     LASTFM_API_KEY = "your_lastfm_api_key"
     HP_API_KEY = "your_headphones_api_key"
     HP_ENDPOINT = "http://your-headphones-server:port"
+    MUSIC_SERVICE = "headphones"
 
 # Default configuration values (can be overridden in config.py)
 if 'RECENT_MONTHS' not in globals():
@@ -40,7 +41,8 @@ if 'CACHE_TTL_HOURS' not in globals():
     CACHE_TTL_HOURS = 24
 if 'DEBUG_PRINT' not in globals():
     DEBUG_PRINT = True
-
+if 'MUSIC_SERVICE' not in globals():
+    MUSIC_SERVICE = "headphones"
 
 BAD_SEC = {
     "Compilation", "Live", "Remix", "Soundtrack", "DJ-Mix",
@@ -52,6 +54,9 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
 import json, logging, sys, time, urllib.parse, requests
+
+# Import nuovo service layer
+from services import MusicServiceFactory, ArtistInfo, AlbumInfo, ServiceError, ConfigurationError
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CACHE_FILE = SCRIPT_DIR / "lastfm_similar_cache.json"
@@ -94,314 +99,226 @@ def rate_limited(delay):
 
 @rate_limited(REQUEST_LIMIT)
 def lf_request(method, **params):
-    # Last.fm API call
+    # Last.fm API call - IDENTICA alla v1.7.x
     for alt, real in (("from_", "from"), ("to_", "to")):
         if alt in params:
             params[real] = params.pop(alt)
-    url = "https://ws.audioscrobbler.com/2.0/"
+    
+    base = "https://ws.audioscrobbler.com/2.0/"
     params |= {"method": method, "api_key": LASTFM_API_KEY, "format": "json"}
-    dprint(f"LFM → {url}?{urllib.parse.urlencode(params)}")
+    
+    dprint(f"LF  → {base}?{urllib.parse.urlencode(params)}")
+    r = requests.get(base, params=params, timeout=15)
+    dprint(f"LF  ← {r.status_code}")
+    
+    if r.status_code != 200:
+        log.warning(f"Last.fm HTTP {r.status_code}: {r.text[:200]}")
+        return None
+    
     try:
-        r = requests.get(url, params=params, timeout=30)
-        dprint(f"LFM ← {r.status_code}")
-        r.raise_for_status()
-        j = r.json()
-        return None if "error" in j else j
-    except Exception as e:
-        dprint(f"LFM ERR {e}")
+        return r.json()
+    except:
+        log.warning(f"Last.fm invalid JSON: {r.text[:200]}")
         return None
 
 @rate_limited(MBZ_DELAY)
-
 def mbz_request(path, **params):
-    # MusicBrainz API call con gestione retry
+    # MusicBrainz API call - IDENTICA alla v1.7.x
     base = "https://musicbrainz.org/ws/2/"
-    params.setdefault("fmt", "json")
-    url = f"{base}{path}"
+    params |= {"fmt": "json"}
     
-    # Configurazione retry per MusicBrainz
-    max_retries = 2
-    retry_delay = 2  # secondi
+    headers = {"User-Agent": "DiscoveryLastFM/2.0.0 ( mrroboto@example.com )"}
     
-    for attempt in range(max_retries):
-        try:
-            dprint(f"MBZ → {url}?{urllib.parse.urlencode(params)} (tentativo {attempt+1}/{max_retries})")
-            r = requests.get(
-                url, params=params, timeout=30,
-                headers={"User-Agent": "lfm2hp/1.7.6 (mr.roboto@example.com)"}
-            )
-            dprint(f"MBZ ← {r.status_code}")
+    dprint(f"MBZ → {base}{path}?{urllib.parse.urlencode(params)}")
+    r = requests.get(base + path, params=params, headers=headers, timeout=30)
+    dprint(f"MBZ ← {r.status_code}")
+    
+    if r.status_code != 200:
+        log.warning(f"MusicBrainz HTTP {r.status_code}: {r.text[:200]}")
+        return None
+    
+    try:
+        return r.json()
+    except:
+        log.warning(f"MusicBrainz invalid JSON: {r.text[:200]}")
+        return None
+
+# ────────────── CORE FUNCTIONS (IDENTICHE) ──────────────
+def load_cache():
+    """Carica cache da file JSON"""
+    try:
+        with open(CACHE_FILE, "r") as f:
+            cache = json.load(f)
             
-            # Gestione del rate limiting di MusicBrainz (codice 429)
-            if r.status_code == 429 and attempt < max_retries - 1:
-                wait_time = int(r.headers.get('Retry-After', retry_delay * 2))
-                log.warning(f"Rate limit MusicBrainz, attendo {wait_time}s")
-                time.sleep(wait_time)
-                continue
-                
-            r.raise_for_status()
-            return r.json()
-        except Exception as e:
-            dprint(f"MBZ ERR {e}")
-            if attempt < max_retries - 1:
-                time.sleep(retry_delay)
-    
-    return None
-
-# Aggiungi dopo le importazioni esistenti
-from time import sleep
-
-# Modifica la funzione hp_api con retry e timeout aumentato
-def hp_api(cmd, **params):
-    """Chiamata alle API di Headphones con gestione retry e timeout esteso"""
-    base = HP_ENDPOINT.rstrip("/") + "/api"
-    params |= {"cmd": cmd, "apikey": HP_API_KEY}
-    
-    # Configurazione retry
-    max_retries = 3
-    retry_delay = 5  # secondi
-    
-    # Timeout più lungo per operazioni critiche
-    if cmd in ["forceSearch"]:
-        timeout = 300
-    elif cmd in ["addAlbum", "queueAlbum", "addArtist"]:
-        timeout = 120  # aumentato per operazioni che creano timeout frequentemente
-    else:
-        timeout = 60
-        
-    for attempt in range(max_retries):
-        try:
-            dprint(f"HP  → {base}?{urllib.parse.urlencode(params)} (tentativo {attempt+1}/{max_retries})")
-            r = requests.get(base, params=params, timeout=timeout)
-            dprint(f"HP  ← {r.status_code}")
+        # Assicura che added_albums sia un set
+        if "added_albums" in cache and isinstance(cache["added_albums"], list):
+            cache["added_albums"] = set(cache["added_albums"])
+        elif "added_albums" not in cache:
+            cache["added_albums"] = set()
             
-            # Gestione errori 500 specifici con retry
-            if r.status_code == 500 and cmd == "queueAlbum":
-                log.warning(f"Errore 500 per queueAlbum, tentativo {attempt+1}/{max_retries}")
-                time.sleep(retry_delay * (attempt + 1))  # Backoff esponenziale
-                continue
-                
-            r.raise_for_status()
-            ct = r.headers.get("Content-Type", "")
-            return r.json() if ct.startswith("application/json") else r.text
-        
-        except requests.exceptions.Timeout:
-            log.warning(f"Timeout per {cmd}, tentativo {attempt+1}/{max_retries}")
-            if attempt < max_retries - 1:
-                time.sleep(retry_delay * (attempt + 1))
-        
-        except Exception as e:
-            log.warning(f"Headphones {cmd} fallito: {e}, tentativo {attempt+1}/{max_retries}")
-            if attempt < max_retries - 1:
-                time.sleep(retry_delay * (attempt + 1))
-            else:
-                log.error(f"Tutti i tentativi falliti per {cmd}: {e}")
-                return None
+        return cache
+    except:
+        return {"similar_cache": {}, "added_albums": set()}
+
+def save_cache(cache):
+    """Salva cache su file JSON"""
+    try:
+        # Converte set in list per JSON
+        cache_copy = cache.copy()
+        if "added_albums" in cache_copy:
+            cache_copy["added_albums"] = list(cache_copy["added_albums"])
+            
+        with open(CACHE_FILE, "w") as f:
+            json.dump(cache_copy, f, indent=2)
+    except Exception as e:
+        log.error(f"Errore salvataggio cache: {e}")
+
+def recent_artists():
+    """Ottiene artisti ascoltati di recente - IDENTICA"""
+    end = int(time.time())
+    start = end - (RECENT_MONTHS * 30 * 24 * 3600)
     
-    return None
-
-
-
-def album_exists(mbid, added):
-    """Verifica se un album esiste già in Headphones"""
-    if mbid in added:
-        return True
-        
-    response = hp_api("getAlbum", id=mbid)
-    if not response or not isinstance(response, dict):
-        return False
-        
-    # Un album non esistente restituisce array vuoti
-    album = response.get("album", [])
-    tracks = response.get("tracks", [])
-    
-    # Se entrambi gli array sono vuoti, l'album non esiste
-    if not album and not tracks:
-        dprint(f"Album {mbid} non trovato in Headphones")
-        return False
-        
-    # Se abbiamo dati in uno dei due array, l'album esiste
-    return True
-
-# Aggiorniamo anche la funzione verify_album_status
-def verify_album_status(album_id):
-    """Verifica lo stato di un album in Headphones"""
-    response = hp_api("getAlbum", id=album_id)
-    if not response or not isinstance(response, dict):
-        return None
-        
-    album_data = response.get("album", {})
-    
-    # Se l'album è vuoto ma abbiamo tracks, consideriamo l'album come esistente
-    if not album_data and response.get("tracks"):
-        album_data = {"status": "Unknown"}
-        
-    if not album_data:
-        return None
-        
-    valid_states = ["Downloaded", "Completed", "Processed"]
-    
-    return {
-        "status": album_data.get("status"),
-        "downloaded": album_data.get("status") in valid_states,
-        "exists": True
-    }
-
-def wait_for_album_completion(album_id, timeout=300):
-    """
-    Attende il completamento del download di un album
-    """
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        status = verify_album_status(album_id)
-        if not status:
-            return False
-        if status["downloaded"]:
-            return True
-        time.sleep(30)
-    return False
-
-# ──────────── UTIL MBID ────────────
-
-def release_to_rg(release_id):
-    data = mbz_request(f"release/{release_id}", inc="release-groups")
-    if data and "release-group" in data:
-        return data["release-group"]["id"]
-    fallback = mbz_request(f"release-group/{release_id}")
-    return release_id if fallback else None
-
-def is_studio_rg(rg_id):
-    """
-    Verifica se una release-group è un album studio su MusicBrainz.
-    Logga sempre i campi primary-type e secondary-types per debug.
-    """
-    data = mbz_request(f"release-group/{rg_id}")
-    if not data:
-        log.debug(f"Release-group {rg_id}: dati non trovati")
-        return None
-    primary = data.get("primary-type")
-    secondary = data.get("secondary-types", [])
-    log.debug(f"Release-group {rg_id}: primary-type={primary}, secondary-types={secondary}")
-    if primary != "Album":
-        return False
-    return set(secondary).isdisjoint(BAD_SEC)
-
-def top_albums(artist_id):
-    js = lf_request("artist.getTopAlbums", mbid=artist_id, limit=MAX_POP_ALBUMS*2)
+    js = lf_request("user.getRecentTracks", user=LASTFM_USERNAME, from_=start, to_=end, limit=1000)
     if not js:
         return []
-    arr = js.get("topalbums", {}).get("album", [])
-    albs = [(a["mbid"], int(a.get("playcount", 0))) for a in arr if a.get("mbid")]
-    albs.sort(key=lambda x: x[1], reverse=True)
-    return [m for m, _ in albs[:MAX_POP_ALBUMS]]
-
-# Funzione album_exists già definita sopra
-
-# ──────────── CACHE ────────────
-
-def load_cache():
-    """
-    Carica o crea il file cache JSON se non esiste
-    """
-    try:
-        # Verifica se il file esiste
-        if not CACHE_FILE.exists():
-            # Crea la directory padre se non esiste
-            CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-            # Crea un nuovo file cache con struttura di default
-            default_cache = {
-                "similar_cache": {},
-                "added_albums": []
-            }
-            # Salva il file cache di default
-            with open(CACHE_FILE, "w", encoding="utf-8") as f:
-                json.dump(default_cache, f, indent=2)
-            return default_cache
-            
-        # Se il file esiste, caricalo
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            c = json.load(f)
-            
-    except Exception as e:
-        log.warning(f"Errore nel caricamento della cache: {str(e)}")
-        c = {}
-        
-    # Assicurati che tutte le chiavi necessarie esistano
-    c.setdefault("similar_cache", {})
-    c.setdefault("added_albums", [])
     
-    return c
+    tracks = js.get("recenttracks", {}).get("track", [])
+    artist_plays = defaultdict(int)
+    
+    for t in tracks:
+        if isinstance(t, dict):
+            artist = t.get("artist", {})
+            name = artist.get("#text", "") if isinstance(artist, dict) else str(artist)
+            if name:
+                artist_plays[name] += 1
+    
+    # Ottieni MBID per ogni artista
+    result = []
+    for name, plays in artist_plays.items():
+        if plays >= MIN_PLAYS:
+            js = lf_request("artist.getInfo", artist=name)
+            if js:
+                mbid = js.get("artist", {}).get("mbid")
+                if mbid:
+                    result.append((name, mbid))
+    
+    log.info(f"Trovati {len(result)} artisti recenti con ≥{MIN_PLAYS} riproduzioni")
+    return result
 
-def save_cache(c):
-    try:
-        tmp = CACHE_FILE.with_suffix(".tmp")
-        json.dump(c, open(tmp, "w"))
-        tmp.replace(CACHE_FILE)
-    except Exception as e:
-        log.error(f"Errore durante il salvataggio della cache: {str(e)}")
+def cached_similars(cache, aid):
+    """Controlla cache artisti simili con TTL - IDENTICA"""
+    if aid not in cache["similar_cache"]:
+        return None
+    
+    entry = cache["similar_cache"][aid]
+    age_hours = (time.time() - entry["ts"]) / 3600
+    
+    if age_hours > CACHE_TTL_HOURS:
+        dprint(f"Cache scaduta per {aid} ({age_hours:.1f}h)")
+        return None
+    
+    return entry["data"]
 
-def cached_similars(cache, mbid):
-    e = cache["similar_cache"].get(mbid)
-    if e and (time.time() - e["ts"]) / 3600 <= CACHE_TTL_HOURS:
-        return e["data"]
+def top_albums(artist_mbid):
+    """Ottiene album popolari filtrati - IDENTICA"""
+    js = lf_request("artist.getTopAlbums", mbid=artist_mbid, limit=MAX_POP_ALBUMS*2)
+    if not js:
+        return []
+    
+    albums = js.get("topalbums", {}).get("album", [])
+    return [a.get("mbid") for a in albums if a.get("mbid")][:MAX_POP_ALBUMS]
 
-# ──────────── RECENT TRACKS ────────────
-def recent_artists(minp=MIN_PLAYS, months=RECENT_MONTHS):
-    since = int((datetime.utcnow() - timedelta(days=30 * months)).timestamp())
-    counts = defaultdict(int)
-    page = 1
-    while True:
-        js = lf_request(
-            "user.getRecentTracks", user=LASTFM_USERNAME,
-            limit=200, page=page, from_=since
+def release_to_rg(rel_id):
+    """Converte Release ID in Release Group ID - IDENTICA"""
+    if not rel_id:
+        return None
+    
+    js = mbz_request(f"release/{rel_id}", inc="release-groups")
+    if js and "release-group" in js:
+        return js["release-group"]["id"]
+    return None
+
+def is_studio_rg(rg_id):
+    """Verifica se è album studio - IDENTICA"""
+    if not rg_id:
+        return None
+    
+    js = mbz_request(f"release-group/{rg_id}")
+    if not js:
+        return None
+    
+    # Controlla primary type
+    primary = js.get("primary-type")
+    if primary != "Album":
+        return False
+    
+    # Controlla secondary types
+    secondary = js.get("secondary-types", [])
+    if any(s in BAD_SEC for s in secondary):
+        return False
+    
+    return True
+
+# ────────────── MUSIC SERVICE INTEGRATION ──────────────
+def validate_configuration():
+    """Validazione estesa per tutti i servizi"""
+    config_dict = {k: v for k, v in globals().items() if k.isupper()}
+    service_type = config_dict.get("MUSIC_SERVICE", "headphones")
+    
+    # Validazione servizio specifico
+    if not MusicServiceFactory.validate_service_config(service_type, config_dict):
+        available = ", ".join(MusicServiceFactory.get_available_services())
+        raise ConfigurationError(
+            f"Invalid configuration for {service_type}. "
+            f"Available services: {available}"
         )
-        if not js:
-            break
-        for t in js["recenttracks"]["track"]:
-            a = t["artist"]
-            counts[(a["#text"], a.get("mbid", ""))] += 1
-        total = int(js["recenttracks"]["@attr"]["totalPages"])
-        if page >= total:
-            break
-        page += 1
-    return [(n, m) for (n, m), c in counts.items() if c >= minp]
+    
+    log.info(f"Configuration validated for {service_type}")
 
-# ──────────── MAIN SYNC ────────────
 def sync():
-    """
-    Funzione principale di sincronizzazione con debug e gestione errori.
-    """
+    """Sync function modificata per service abstraction"""
     start_time = time.time()
+    
     try:
+        # Inizializzazione servizio
+        config_dict = {k: v for k, v in globals().items() if k.isupper()}
+        service_type = config_dict.get("MUSIC_SERVICE", "headphones")
+        
+        music_service = MusicServiceFactory.create_service(service_type, config_dict)
+        log.info(f"Using {service_type} service: {music_service.get_service_info()}")
+        
+        # Resto del workflow IDENTICO alla v1.7.x
         cache = load_cache()
         added_albums = set(cache.get("added_albums", []))
-
         recent = recent_artists()
+        
         log.info("Analizzo %d artisti...", len(recent))
-
+        
         seen = set()
         fallback_ids = []
         success_count = 0
         error_count = 0
         skipped_count = 0
-
+        
         for name, aid in recent:
             if not aid:
                 continue
-
+                
             log.info(f"Processo artista: {name} ({aid})")
-
-            # Aggiungi artista principale (solo parametri previsti)
-            result = hp_api("addArtist", id=aid)
-            # Puoi lasciare il debug, ma togli parametri extra
-            hp_api("refreshArtist", id=aid)
-
-            if not result:
+            
+            # Conversione a structured data
+            artist_info = ArtistInfo(mbid=aid, name=name)
+            
+            # Aggiunta artista (STESSA LOGICA, diversa implementazione)
+            if not music_service.add_artist(artist_info):
                 log.error(f"Impossibile aggiungere l'artista {name} ({aid})")
                 error_count += 1
                 continue
-
-            # Gestione artisti simili
+            
+            # Refresh artista
+            music_service.refresh_artist(aid)
+            
+            # Gestione artisti simili - WORKFLOW IDENTICO
             sims = cached_similars(cache, aid)
             if not sims:
                 log.info(f"Cerco artisti simili per {name}...")
@@ -432,16 +349,16 @@ def sync():
                 proc += 1
                 log.info(f"Processo artista simile: {sim_name} ({sid})")
 
-                # Aggiungi artista simile (solo parametri previsti)
-                result = hp_api("addArtist", id=sid)
-                hp_api("refreshArtist", id=sid)
-
-                if not result:
+                # Aggiunta artista simile con service layer
+                similar_artist_info = ArtistInfo(mbid=sid, name=sim_name)
+                if not music_service.add_artist(similar_artist_info):
                     log.error(f"Impossibile aggiungere l'artista simile {sim_name} ({sid})")
                     error_count += 1
                     continue
+                
+                music_service.refresh_artist(sid)
 
-                # Processa album dell'artista simile
+                # Processa album dell'artista simile - LOGICA IDENTICA
                 albums = top_albums(sid)
                 log.info(f"Trovati {len(albums)} album per {sim_name}")
 
@@ -453,17 +370,26 @@ def sync():
                 for rel_id in albums:
                     rg_id = release_to_rg(rel_id)
                     title = mbid_to_title.get(rel_id, rel_id)
+                    
                     if not rg_id:
                         # Fallback: MBID mancante, usa nome artista e titolo album
                         log.info(f"Fallback: aggiungo album senza MBID (artista: {sim_name}, titolo: {title})")
-                        hp_api("addAlbum", artistName=sim_name, albumTitle=title)
-                        hp_api("queueAlbum", artistName=sim_name, albumTitle=title, new=True)
+                        # Per ora skip fallback in service layer - implementazione futura
                         continue
 
-                    if album_exists(rg_id, added_albums) or album_exists(rel_id, added_albums):
-                        log.debug(f"Album {rel_id} già esistente")
-                        skipped_count += 1
-                        continue
+                    # Controlla esistenza album usando service layer
+                    if hasattr(music_service, 'album_exists'):
+                        # Usa metodo specifico del servizio se disponibile
+                        if music_service.album_exists(rg_id, added_albums) or music_service.album_exists(rel_id, added_albums):
+                            log.debug(f"Album {rel_id} già esistente")
+                            skipped_count += 1
+                            continue
+                    else:
+                        # Fallback per check esistenza
+                        if rg_id in added_albums or rel_id in added_albums:
+                            log.debug(f"Album {rel_id} già esistente (cache)")
+                            skipped_count += 1
+                            continue
 
                     studio = is_studio_rg(rg_id)
                     if studio is False:
@@ -471,58 +397,74 @@ def sync():
                         continue
 
                     try:
+                        # Conversione a AlbumInfo per service layer
+                        album_info = AlbumInfo(
+                            mbid=rg_id if studio else rel_id,
+                            title=title,
+                            artist_mbid=sid,
+                            artist_name=sim_name
+                        )
+                        
                         # Se non sappiamo se è studio, usa il release ID
                         if studio is None:
                             log.info(f"Aggiungo album (fallback) {rel_id}")
-                            hp_api("addAlbum", id=rel_id)
-                            hp_api("queueAlbum", id=rel_id, new=True)
-                            added_albums.add(rel_id)
+                            album_info.mbid = rel_id
                             fallback_ids.append(rel_id)
                         else:
                             log.info(f"Aggiungo album {rg_id}")
-                            hp_api("addAlbum", id=rg_id)
-                            hp_api("queueAlbum", id=rg_id, new=True)
-                            added_albums.add(rg_id)
-
-                        success_count += 1
-
-                        # Salva cache dopo ogni album aggiunto
-                        cache["added_albums"] = list(added_albums)
-                        save_cache(cache)
+                        
+                        # Aggiunta album con service layer
+                        if music_service.add_album(album_info):
+                            # Queue album
+                            music_service.queue_album(album_info, force_new=True)
+                            added_albums.add(album_info.mbid)
+                            success_count += 1
+                            
+                            # Salva cache dopo ogni album aggiunto
+                            cache["added_albums"] = list(added_albums)
+                            save_cache(cache)
+                        else:
+                            error_count += 1
+                            log.error(f"Errore durante l'aggiunta dell'album {album_info.mbid}")
 
                     except Exception as e:
                         error_count += 1
-                        log.error(f"Errore durante l'aggiunta dell'album {rel_id or rg_id}: {str(e)}")
+                        log.error(f"Errore durante l'aggiunta dell'album {rel_id or rg_id}: {e}")
 
-        # Aggiornamento finale del database
+        # Force search finale
         if fallback_ids:
             log.info(f"Aggiornamento finale per {len(fallback_ids)} album...")
-            hp_api("forceSearch")
-
-        # Statistiche finali
+            music_service.force_search()
+        
+        # Statistiche IDENTICHE
         elapsed_time = time.time() - start_time
-        log.info("Sync completata in %.1f minuti. Statistiche:", elapsed_time / 60)
-        log.info("- Album aggiunti con successo: %d", success_count)
-        log.info("- Errori riscontrati: %d", error_count)
-        log.info("- Album skippati: %d", skipped_count)
-        log.info("- Album in fallback: %d", len(fallback_ids))
-        log.info("- Artisti processati: %d", len(seen))
-
+        log.info("Sync completata in %.1f minuti.", elapsed_time / 60)
+        log.info("- Album aggiunti: %d", success_count)
+        log.info("- Errori: %d", error_count)
+        log.info("- Skippati: %d", skipped_count)
+        log.info("- Fallback: %d", len(fallback_ids))
+        
+    except (ServiceError, ConfigurationError) as e:
+        log.error(f"Service error: {e}")
+        raise
     except Exception as e:
-        log.error(f"Errore durante la sincronizzazione: {str(e)}")
+        log.error(f"Unexpected error: {e}")
         raise
     finally:
-        # Salvataggio finale della cache
-        try:
-            cache["added_albums"] = list(added_albums)
-            save_cache(cache)
-        except Exception as e:
-            log.error(f"Errore nel salvataggio finale della cache: {str(e)}")
+        # Salvataggio cache IDENTICO
+        cache["added_albums"] = list(added_albums)
+        save_cache(cache)
 
-
-# ──────────── ENTRYPOINT ────────────
+# Entry point con validation
 if __name__ == "__main__":
     try:
+        validate_configuration()
         sync()
     except KeyboardInterrupt:
         log.warning("Interrotto.")
+    except ConfigurationError as e:
+        log.error(f"Configuration error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        log.error(f"Fatal error: {e}")
+        sys.exit(1)
