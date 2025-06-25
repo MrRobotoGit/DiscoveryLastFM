@@ -1,22 +1,23 @@
-# DiscoveryLastFM v2.0    
+# DiscoveryLastFM v2.1    
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-brightgreen.svg)](CHANGELOG.md)
 [![Headphones](https://img.shields.io/badge/service-Headphones-blue.svg)](https://github.com/rembo10/headphones)
 [![Lidarr](https://img.shields.io/badge/service-Lidarr-orange.svg)](https://github.com/Lidarr/Lidarr)
+[![Auto-Update](https://img.shields.io/badge/feature-Auto--Update-yellow.svg)](#-auto-update-system)
 [![Star](https://img.shields.io/github/stars/MrRobotoGit/DiscoveryLastFM?style=social)](https://github.com/MrRobotoGit/DiscoveryLastFM)
 
 🎵 **Modern music discovery tool** that integrates Last.fm, MusicBrainz, and **both Headphones & Lidarr** to automatically discover and queue new albums based on your listening history.
 
-## 🚀 What's New in v2.0
+## 🚀 What's New in v2.1
 
-- **Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
-- **Modular Architecture**: Clean service layer for easy extensibility
-- **Zero Breaking Changes**: Existing Headphones users continue without modifications
-- **Advanced Configuration**: Enhanced quality and metadata profile management for Lidarr
-- **Robust Error Handling**: Improved retry logic and connection management
-- **Service Parity**: Identical functionality across both music management services
+- **🆕 GitHub Auto-Update System**: Automatic updates with backup and rollback capabilities
+- **🎛️ CLI Interface**: Complete command-line interface with `--update`, `--status`, and more
+- **🛡️ Safety First**: Automatic backups, verification, and rollback for safe updates
+- **📦 Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
+- **🏗️ Modular Architecture**: Clean service layer for easy extensibility
+- **✅ Zero Breaking Changes**: Existing users continue without modifications
 
 ## 🎵 Features
 
@@ -69,6 +70,7 @@
 
 ### Required
 - **Python 3.8+**: Modern Python installation
+- **Python Dependencies**: `requests` and `packaging` libraries
 - **Last.fm Account**: Free account with API key ([Get API Key](https://www.last.fm/api/account/create))
 - **MusicBrainz Access**: Public API (no registration required)
 
@@ -86,9 +88,13 @@
    cd DiscoveryLastFM
    ```
 
-2. **Install dependencies**:
+2. **Install Python dependencies**:
    ```bash
-   pip install requests
+   # Install all required dependencies in one command
+   pip install requests packaging
+   
+   # Alternative: Use system package manager (recommended for Raspberry Pi/Debian)
+   sudo apt update && sudo apt install python3-requests python3-packaging
    ```
 
 3. **Configure the script**:
@@ -169,6 +175,104 @@ Set up a daily cron job for automated discovery:
 0 3 * * * python3 /path/to/DiscoveryLastFM/DiscoveryLastFM.py >> /path/to/DiscoveryLastFM/log/discover.log 2>&1
 ```
 
+## 🔄 Auto-Update System
+
+DiscoveryLastFM v2.1+ includes a comprehensive auto-update system that keeps your installation current with the latest features and fixes.
+
+### 🎛️ CLI Commands
+
+```bash
+# Check current version
+python3 DiscoveryLastFM.py --version
+
+# Check for available updates
+python3 DiscoveryLastFM.py --update
+
+# Show update status and configuration
+python3 DiscoveryLastFM.py --update-status
+
+# List available backups
+python3 DiscoveryLastFM.py --list-backups
+
+# Clean temporary files
+python3 DiscoveryLastFM.py --cleanup
+
+# Show all available commands
+python3 DiscoveryLastFM.py --help
+```
+
+### 🛡️ Safety Features
+
+- **Automatic Backups**: Complete backup before every update
+- **Verification**: Post-update verification with automatic rollback if issues detected  
+- **Configuration Preservation**: Your `config.py`, cache, and logs are never modified
+- **Failed Attempt Tracking**: Safety limits prevent infinite retry loops
+- **Manual Control**: Updates require explicit user confirmation (no silent auto-updates)
+
+### ⚙️ Auto-Update Configuration
+
+Add these optional settings to your `config.py`:
+
+```python
+# === AUTO-UPDATE CONFIGURATION ===
+AUTO_UPDATE_ENABLED = False          # Enable automatic update checking
+UPDATE_CHECK_INTERVAL_HOURS = 24     # How often to check for updates (hours)
+BACKUP_RETENTION_DAYS = 7            # How long to keep backup files (days)
+ALLOW_PRERELEASE_UPDATES = False     # Allow installation of pre-release versions
+
+# Optional: GitHub token for higher API rate limits  
+# GITHUB_TOKEN = "your_github_token"
+```
+
+### 📋 Update Workflow
+
+1. **Automatic Check**: If enabled, checks for updates during normal sync runs
+2. **Manual Update**: Use `--update` command for interactive installation
+3. **Backup Creation**: Automatic backup of current version before installation
+4. **Safe Installation**: Downloads and installs new version with verification
+5. **Rollback Protection**: Automatic rollback if verification fails
+
+### 🎯 Usage Examples
+
+**Check for Updates**:
+```bash
+$ python3 DiscoveryLastFM.py --update
+DiscoveryLastFM Auto-Update System
+Current version: 2.0.3
+Repository: MrRobotoGit/DiscoveryLastFM
+
+Checking for updates...
+🆕 Update available: 2.1.0
+   Release: Auto-Update System Implementation
+   Published: 2025-06-25T10:30:00Z
+
+Do you want to install this update? [y/N]: y
+
+🚀 Starting update process...
+✅ Update completed successfully!
+   Updated to version: 2.1.0
+```
+
+**Monitor System Status**:
+```bash
+$ python3 DiscoveryLastFM.py --update-status
+DiscoveryLastFM Update Status
+========================================
+Current Version: 2.1.0
+Repository: MrRobotoGit/DiscoveryLastFM
+Auto-update: Disabled
+Last Check: 2025-06-25T12:30:00
+Backups Available: 2
+```
+
+### 🔧 Advanced Features
+
+- **Semantic Versioning**: Intelligent version comparison prevents downgrades
+- **GitHub Integration**: Direct integration with GitHub releases API
+- **Network Resilience**: Handles network issues and API rate limits gracefully
+- **State Persistence**: Maintains update history and configuration between runs
+- **Backup Management**: Automatic cleanup of old backups based on retention policy
+
 ## 📊 Sample Output
 
 ```
@@ -187,7 +291,7 @@ Set up a daily cron job for automated discovery:
 
 ```
 DiscoveryLastFM/
-├── DiscoveryLastFM.py          # Main script
+├── DiscoveryLastFM.py          # Main script with CLI interface
 ├── config.example.py           # Example configuration file
 ├── config.py                   # Your configuration (not in git)
 ├── services/                   # Service layer (v2.0)
@@ -197,12 +301,18 @@ DiscoveryLastFM/
 │   ├── factory.py              # Service factory
 │   ├── headphones.py           # Headphones service
 │   └── lidarr.py               # Lidarr service
+├── utils/                      # Utilities (v2.1)
+│   ├── __init__.py             # Module initialization
+│   └── updater.py              # GitHub auto-update system
 ├── tests/                      # Test suite (v2.0)
 │   ├── __init__.py
 │   ├── test_headphones.py
 │   ├── test_lidarr.py
 │   └── fixtures/
+├── backups/                    # Auto-update backups (auto-created)
+├── tmp/                        # Temporary files (auto-created)
 ├── lastfm_similar_cache.json   # Cache file (not in git)
+├── update_state.json           # Update system state (auto-created)
 ├── log/                        # Log directory (not in git)
 │   └── discover.log            # Application logs
 ├── .gitignore                  # Git ignore file
@@ -294,6 +404,9 @@ Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 - Service layer architecture
 - Zero breaking changes migration
 - Advanced configuration management
+- **GitHub auto-update system with CLI interface**
+- **Automatic backup and rollback capabilities**
+- **Semantic versioning and safe installation**
 
 ### Planned 🔜
 - CSV export functionality
@@ -301,6 +414,8 @@ Enable debug output by setting `DEBUG_PRINT = True` in the configuration.
 - Multiple instance support
 - Enhanced caching system
 - Plugin architecture for additional services
+- Beta testing program integration
+- Automatic security patch installation
 
 ## 📜 License
 
