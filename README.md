@@ -19,6 +19,15 @@
 - **🏗️ Modular Architecture**: Clean service layer for easy extensibility
 - **✅ Zero Breaking Changes**: Existing users continue without modifications
 
+## 🚀 What's New in v2.0
+
+- **Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
+- **Modular Architecture**: Clean service layer for easy extensibility
+- **Zero Breaking Changes**: Existing Headphones users continue without modifications
+- **Advanced Configuration**: Enhanced quality and metadata profile management for Lidarr
+- **Robust Error Handling**: Improved retry logic and connection management
+- **Service Parity**: Identical functionality across both music management services
+
 ## 🎵 Features
 
 ### Core Discovery Engine
