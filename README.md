@@ -2,7 +2,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-brightgreen.svg)](CHANGELOG.md)
 [![Headphones](https://img.shields.io/badge/service-Headphones-blue.svg)](https://github.com/rembo10/headphones)
 [![Lidarr](https://img.shields.io/badge/service-Lidarr-orange.svg)](https://github.com/Lidarr/Lidarr)
 [![Star](https://img.shields.io/github/stars/MrRobotoGit/DiscoveryLastFM?style=social)](https://github.com/MrRobotoGit/DiscoveryLastFM)
@@ -79,7 +79,64 @@
 
 > **💡 Tip**: Lidarr is recommended for new users due to its modern interface and active development
 
-## 🚀 Installation
+## 🐳 Quick Start with Docker (Recommended)
+
+**The easiest way to run DiscoveryLastFM is using Docker!**
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/mrrobotogit/discoverylastfm)](https://hub.docker.com/r/mrrobotogit/discoverylastfm)
+[![Docker Image Size](https://img.shields.io/docker/image-size/mrrobotogit/discoverylastfm/latest)](https://hub.docker.com/r/mrrobotogit/discoverylastfm)
+
+### 🚀 With Lidarr (Recommended)
+```bash
+docker run -d \
+  --name discoverylastfm \
+  -e LASTFM_USERNAME=your_username \
+  -e LASTFM_API_KEY=your_api_key \
+  -e MUSIC_SERVICE=lidarr \
+  -e LIDARR_API_KEY=your_lidarr_key \
+  -e LIDARR_ENDPOINT=http://your-lidarr:8686 \
+  mrrobotogit/discoverylastfm:latest
+```
+
+### 🎧 With Headphones
+```bash
+docker run -d \
+  --name discoverylastfm \
+  -e LASTFM_USERNAME=your_username \
+  -e LASTFM_API_KEY=your_api_key \
+  -e MUSIC_SERVICE=headphones \
+  -e HP_API_KEY=your_headphones_key \
+  -e HP_ENDPOINT=http://your-headphones:8181 \
+  mrrobotogit/discoverylastfm:latest
+```
+
+### 📦 Docker Compose Example
+```yaml
+version: '3.8'
+services:
+  discoverylastfm:
+    image: mrrobotogit/discoverylastfm:latest
+    environment:
+      - LASTFM_USERNAME=your_username
+      - LASTFM_API_KEY=your_api_key
+      # For Lidarr:
+      - MUSIC_SERVICE=lidarr
+      - LIDARR_API_KEY=your_key
+      - LIDARR_ENDPOINT=http://lidarr:8686
+      # For Headphones (alternative):
+      # - MUSIC_SERVICE=headphones
+      # - HP_API_KEY=your_key
+      # - HP_ENDPOINT=http://headphones:8181
+    restart: unless-stopped
+```
+
+**🔗 [Complete Docker Guide & Examples](https://hub.docker.com/r/mrrobotogit/discoverylastfm)**
+
+---
+
+## 🛠️ Manual Installation
+
+For advanced users who prefer running without Docker:
 
 1. **Clone the repository**:
    ```bash
