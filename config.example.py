@@ -64,3 +64,15 @@ MBZ_DELAY = 1.1                # MusicBrainz delay between requests (seconds)
 # === SYSTEM CONFIGURATION ===
 VALIDATE_CONFIG_ON_STARTUP = True    # Validate configuration on startup
 ENABLE_CACHE_MIGRATION = True        # Auto-migrate cache format if needed
+
+# === AUTO-UPDATE CONFIGURATION ===
+# GitHub Auto-Update System (NEW in v2.1.0)
+AUTO_UPDATE_ENABLED = False          # Enable automatic update checking
+UPDATE_CHECK_INTERVAL_HOURS = 24     # How often to check for updates (hours)
+BACKUP_RETENTION_DAYS = 7            # How long to keep backup files (days)
+ALLOW_PRERELEASE_UPDATES = False     # Allow installation of pre-release versions
+
+# GitHub Repository Configuration (optional - defaults to official repo)
+GITHUB_REPO_OWNER = "MrRobotoGit"    # GitHub username/organization
+GITHUB_REPO_NAME = "DiscoveryLastFM"  # Repository name
+# GITHUB_TOKEN = "your_github_token"   # Optional: GitHub token for higher rate limits

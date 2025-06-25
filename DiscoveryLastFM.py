@@ -53,7 +53,7 @@ BAD_SEC = {
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
-import json, logging, sys, time, urllib.parse, requests
+import json, logging, os, sys, time, urllib.parse, requests
 
 # Import nuovo service layer
 from services import MusicServiceFactory, ArtistInfo, AlbumInfo, ServiceError, ConfigurationError
@@ -559,11 +559,234 @@ def sync():
         gc.collect()
         log.debug("Memory cleanup completed")
 
-# Entry point con validation
+def handle_update_command():
+    """Gestisce il comando --update"""
+    from utils.updater import create_updater_from_config, get_current_version
+    
+    # Configurazione per updater
+    config_dict = {k: v for k, v in globals().items() if k.isupper()}
+    config_dict["PROJECT_ROOT"] = os.path.dirname(os.path.abspath(__file__))
+    
+    updater = create_updater_from_config(config_dict)
+    
+    print(f"DiscoveryLastFM Auto-Update System")
+    print(f"Current version: {get_current_version()}")
+    print(f"Repository: {updater.repo_owner}/{updater.repo_name}")
+    print()
+    
+    # Controlla aggiornamenti
+    print("Checking for updates...")
+    release_info = updater.check_for_updates()
+    
+    if not release_info:
+        print("✅ Already up to date!")
+        return
+    
+    # Mostra info nuova versione
+    print(f"🆕 Update available: {release_info['version']}")
+    print(f"   Release: {release_info['name']}")
+    print(f"   Published: {release_info['published_at']}")
+    
+    if release_info.get('prerelease'):
+        print("   ⚠️  This is a pre-release version")
+    
+    print()
+    print("Release Notes:")
+    print("-" * 50)
+    print(release_info['body'][:500] + ("..." if len(release_info['body']) > 500 else ""))
+    print("-" * 50)
+    print()
+    
+    # Conferma aggiornamento
+    while True:
+        response = input("Do you want to install this update? [y/N]: ").strip().lower()
+        if response in ['y', 'yes']:
+            break
+        elif response in ['n', 'no', '']:
+            print("Update cancelled.")
+            return
+        else:
+            print("Please enter 'y' or 'n'")
+    
+    # Esegui aggiornamento
+    print("\n🚀 Starting update process...")
+    print("This will:")
+    print("1. Create a backup of current version")
+    print("2. Download and install the new version")
+    print("3. Verify the installation")
+    print("4. Rollback automatically if anything goes wrong")
+    print()
+    
+    success = updater.perform_update(release_info)
+    
+    if success:
+        print("✅ Update completed successfully!")
+        print(f"   Updated to version: {release_info['version']}")
+        print("   Your configuration and cache files have been preserved.")
+        print("\n🔄 Please restart the application to use the new version.")
+    else:
+        print("❌ Update failed!")
+        print("   Your previous version has been restored.")
+        print("   Check the logs for more details.")
+
+
+def handle_update_status():
+    """Mostra lo stato dell'updater"""
+    from utils.updater import create_updater_from_config
+    
+    config_dict = {k: v for k, v in globals().items() if k.isupper()}
+    config_dict["PROJECT_ROOT"] = os.path.dirname(os.path.abspath(__file__))
+    
+    updater = create_updater_from_config(config_dict)
+    status = updater.get_update_status()
+    
+    print("DiscoveryLastFM Update Status")
+    print("=" * 40)
+    print(f"Current Version: {status['current_version']}")
+    print(f"Repository: {status['repo']}")
+    print(f"Auto-update: {'Enabled' if status['auto_update_enabled'] else 'Disabled'}")
+    
+    if status['last_check']:
+        print(f"Last Check: {status['last_check']}")
+    else:
+        print("Last Check: Never")
+    
+    if status['available_version']:
+        if status['available_version'] != status['current_version']:
+            print(f"Available Version: {status['available_version']} ⚠️")
+        else:
+            print(f"Available Version: {status['available_version']} ✅")
+    
+    if status['failed_attempts'] > 0:
+        print(f"Failed Attempts: {status['failed_attempts']} ❌")
+    
+    print(f"Backups Available: {status['backup_count']}")
+    
+    if status['next_check']:
+        print(f"Next Check: {status['next_check']}")
+
+
+def handle_backups_list():
+    """Lista i backup disponibili"""
+    from utils.updater import create_updater_from_config
+    
+    config_dict = {k: v for k, v in globals().items() if k.isupper()}
+    config_dict["PROJECT_ROOT"] = os.path.dirname(os.path.abspath(__file__))
+    
+    updater = create_updater_from_config(config_dict)
+    backups = updater.list_backups()
+    
+    if not backups:
+        print("No backups found.")
+        return
+    
+    print("Available Backups")
+    print("=" * 60)
+    print(f"{'Version':<10} {'Date':<20} {'Size':<10} {'Status'}")
+    print("-" * 60)
+    
+    for backup in backups:
+        status = "✅ OK" if backup['exists'] else "❌ Missing"
+        timestamp = backup['timestamp']
+        # Format timestamp
+        try:
+            from datetime import datetime
+            dt = datetime.strptime(timestamp, "%Y%m%d_%H%M%S")
+            date_str = dt.strftime("%Y-%m-%d %H:%M")
+        except:
+            date_str = timestamp
+        
+        print(f"{backup['version']:<10} {date_str:<20} {backup['size_mb']} MB{'':<5} {status}")
+
+
+def parse_cli_args():
+    """Parse command line arguments"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description='DiscoveryLastFM - Music Discovery & Auto-Queue System',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 DiscoveryLastFM.py                 # Run normal discovery sync
+  python3 DiscoveryLastFM.py --update        # Check and install updates
+  python3 DiscoveryLastFM.py --update-status # Show update status
+  python3 DiscoveryLastFM.py --list-backups  # List available backups
+  python3 DiscoveryLastFM.py --version       # Show current version
+        """
+    )
+    
+    parser.add_argument('--update', action='store_true',
+                       help='Check for updates and install if available')
+    parser.add_argument('--update-status', action='store_true',
+                       help='Show current update status and configuration')
+    parser.add_argument('--list-backups', action='store_true',
+                       help='List available backup versions')
+    parser.add_argument('--version', action='store_true',
+                       help='Show current version and exit')
+    parser.add_argument('--force-update', action='store_true',
+                       help='Force update even after failed attempts')
+    parser.add_argument('--cleanup', action='store_true',
+                       help='Clean up temporary files and old backups')
+    
+    return parser.parse_args()
+
+
+# Entry point con CLI support e validation
 if __name__ == "__main__":
+    import argparse
+    
     try:
+        args = parse_cli_args()
+        
+        # Handle version command
+        if args.version:
+            from utils.updater import get_current_version
+            print(f"DiscoveryLastFM v{get_current_version()}")
+            sys.exit(0)
+        
+        # Handle update commands
+        if args.update:
+            handle_update_command()
+            sys.exit(0)
+        
+        if args.update_status:
+            handle_update_status()
+            sys.exit(0)
+        
+        if args.list_backups:
+            handle_backups_list()
+            sys.exit(0)
+        
+        if args.cleanup:
+            from utils.updater import create_updater_from_config
+            config_dict = {k: v for k, v in globals().items() if k.isupper()}
+            config_dict["PROJECT_ROOT"] = os.path.dirname(os.path.abspath(__file__))
+            updater = create_updater_from_config(config_dict)
+            updater.cleanup_temp_files()
+            print("✅ Cleanup completed")
+            sys.exit(0)
+        
+        # Check for automatic updates if enabled
+        if globals().get('AUTO_UPDATE_ENABLED', False):
+            try:
+                from utils.updater import create_updater_from_config
+                config_dict = {k: v for k, v in globals().items() if k.isupper()}
+                config_dict["PROJECT_ROOT"] = os.path.dirname(os.path.abspath(__file__))
+                updater = create_updater_from_config(config_dict)
+                
+                if updater.should_check_for_updates():
+                    log.info("Checking for automatic updates...")
+                    release_info = updater.check_for_updates()
+                    if release_info:
+                        log.info(f"Update available: {release_info['version']}. Use --update to install.")
+            except Exception as e:
+                log.warning(f"Auto-update check failed: {e}")
+        
+        # Normal sync operation
         validate_configuration()
         sync()
+        
     except KeyboardInterrupt:
         log.warning("Interrotto.")
     except ConfigurationError as e:

@@ -5,6 +5,151 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-06-25
+
+### 🚀 Major New Feature: GitHub Auto-Update System
+
+**Complete Auto-Update Implementation**
+- **NEW**: GitHub releases monitoring with semantic versioning support
+- **NEW**: Automatic backup creation before updates with configurable retention
+- **NEW**: Safe installation with verification and automatic rollback on failure
+- **NEW**: CLI commands for manual update management
+- **NEW**: Scheduled update checking with configurable intervals
+
+### 🛠️ Auto-Update Features
+
+**Core Functionality**
+- **NEW**: `--update` command for interactive update installation
+- **NEW**: `--update-status` command for system status overview
+- **NEW**: `--list-backups` command for backup management
+- **NEW**: `--version` command for quick version checking
+- **NEW**: `--cleanup` command for temporary file management
+- **NEW**: GitHub releases API integration with rate limiting support
+
+**Safety & Reliability**
+- **NEW**: Complete project backup before any update
+- **NEW**: Installation verification with automatic rollback if verification fails
+- **NEW**: Preserves configuration files, cache, and logs during updates
+- **NEW**: Failed update attempt tracking with safety limits
+- **NEW**: Server recovery detection and automatic retry logic
+
+**Configuration Options**
+- **NEW**: `AUTO_UPDATE_ENABLED` - Enable/disable automatic update checking
+- **NEW**: `UPDATE_CHECK_INTERVAL_HOURS` - Configurable check frequency (default: 24h)
+- **NEW**: `BACKUP_RETENTION_DAYS` - Backup retention period (default: 7 days)
+- **NEW**: `ALLOW_PRERELEASE_UPDATES` - Include pre-release versions (default: false)
+- **NEW**: `GITHUB_TOKEN` - Optional token for higher API rate limits
+
+### 📋 Update Workflow
+
+**Manual Update Process**
+```bash
+# Check for updates
+python3 DiscoveryLastFM.py --update
+
+# Check system status
+python3 DiscoveryLastFM.py --update-status
+
+# List available backups
+python3 DiscoveryLastFM.py --list-backups
+
+# Clean temporary files
+python3 DiscoveryLastFM.py --cleanup
+```
+
+**Automatic Update Checking**
+- Runs during normal sync operations when enabled
+- Respects configured check intervals
+- Logs available updates without auto-installing
+- User retains full control over update installation
+
+### 🔧 Technical Implementation
+
+**Architecture**
+- **NEW**: `utils/updater.py` - Complete GitHub updater implementation
+- **NEW**: `GitHubUpdater` class with comprehensive error handling
+- **NEW**: Version comparison using semantic versioning
+- **NEW**: Archive download, extraction, and installation pipeline
+- **NEW**: State tracking with persistent update history
+
+**Safety Mechanisms**
+- **NEW**: Pre-update system validation
+- **NEW**: Critical file identification and protection
+- **NEW**: Post-update verification with import testing
+- **NEW**: Graceful degradation for network/API failures
+- **NEW**: Comprehensive logging for troubleshooting
+
+### 📊 Update System Benefits
+
+| Feature | Benefit |
+|---------|---------|
+| **Automatic Updates** | Stay current with latest fixes and features |
+| **Backup System** | Safe rollback capability for any issues |
+| **CLI Interface** | Full user control and transparency |
+| **Semantic Versioning** | Intelligent update decisions |
+| **Zero Downtime** | Updates preserve all configurations |
+| **Safety First** | Multiple verification layers prevent corruption |
+
+### 🎯 Usage Examples
+
+**Check Current Status**
+```bash
+$ python3 DiscoveryLastFM.py --update-status
+DiscoveryLastFM Update Status
+========================================
+Current Version: 2.0.3
+Repository: MrRobotoGit/DiscoveryLastFM
+Auto-update: Disabled
+Last Check: Never
+Backups Available: 0
+```
+
+**Install Available Update**
+```bash
+$ python3 DiscoveryLastFM.py --update
+DiscoveryLastFM Auto-Update System
+Current version: 2.0.3
+Repository: MrRobotoGit/DiscoveryLastFM
+
+Checking for updates...
+🆕 Update available: 2.1.0
+   Release: Auto-Update System Implementation
+   Published: 2025-06-25T10:30:00Z
+
+Do you want to install this update? [y/N]: y
+
+🚀 Starting update process...
+✅ Update completed successfully!
+   Updated to version: 2.1.0
+```
+
+### 📁 Files Added
+
+- `utils/updater.py` - Complete auto-update implementation
+- `utils/__init__.py` - Updated with GitHubUpdater export
+
+### 📁 Files Modified
+
+- `DiscoveryLastFM.py` - Added CLI interface and auto-update integration
+- `config.example.py` - Added auto-update configuration options
+
+### 🔄 Backward Compatibility
+
+- ✅ **Zero Breaking Changes**: All existing functionality preserved
+- ✅ **Optional Feature**: Auto-update disabled by default
+- ✅ **Configuration Compatible**: Existing configs work unchanged
+- ✅ **Cache Preservation**: All discovery data maintained during updates
+
+### 🔮 Future Enhancements Enabled
+
+This auto-update foundation enables:
+- Automatic security patch installation
+- Feature rollout with user notification
+- Beta testing program participation
+- Centralized update management for multiple instances
+
+---
+
 ## [2.0.3] - 2025-06-25
 
 ### 🚨 Critical Lidarr Reliability Fixes
