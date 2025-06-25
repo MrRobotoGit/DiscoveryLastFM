@@ -1,5 +1,5 @@
 """
-DiscoveryLastFM v2.0 - Lidarr Service  
+DiscoveryLastFM v2.1 - Lidarr Service  
 Implementazione completa per Lidarr API v1.0+
 """
 

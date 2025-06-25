@@ -1,5 +1,5 @@
 """
-DiscoveryLastFM v2.0 - GitHub Auto-Update System
+DiscoveryLastFM v2.1 - GitHub Auto-Update System
 Sistema di aggiornamento automatico da GitHub releases
 """
 

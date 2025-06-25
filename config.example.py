@@ -1,5 +1,5 @@
 # =================================================================
-# DiscoveryLastFM v2.0 Configuration Template
+# DiscoveryLastFM v2.1 Configuration Template
 # Copy to config.py and customize with your values
 # =================================================================
 

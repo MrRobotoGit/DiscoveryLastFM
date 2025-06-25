@@ -1,9 +1,9 @@
 """
-DiscoveryLastFM v2.0 - Services Module
+DiscoveryLastFM v2.1 - Services Module
 Music service abstractions for Headphones and Lidarr integration
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "MrRobotoGit"
 
 from .factory import MusicServiceFactory
