@@ -4,6 +4,7 @@ config.py
 # Documentation (contains project-specific details and credentials)
 CLAUDE.md
 
+.gitignore
 # Git mailmap (contains sensitive attribution mappings)
 .mailmap
 
@@ -104,4 +105,4 @@ debug_*
 # Documentation build
 docs/_build/
 docs/build/
-site/# Force GitHub cache refresh
+site/
