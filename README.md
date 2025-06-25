@@ -88,6 +88,10 @@
 
 2. **Install dependencies**:
    ```bash
+   # Recommended for Debian/Ubuntu/Raspberry Pi
+   sudo apt update && sudo apt install python3-requests python3-packaging
+   
+   # Alternative for other systems
    pip install requests packaging
    ```
 
