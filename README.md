@@ -1,4 +1,4 @@
-# DiscoveryLastFM v2.0    
+# DiscoveryLastFM   
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -9,7 +9,7 @@
 
 🎵 **Modern music discovery tool** that integrates Last.fm, MusicBrainz, and **both Headphones & Lidarr** to automatically discover and queue new albums based on your listening history.
 
-## 🚀 What's New in v2.0
+## 🚀 What's New in v2.1.0
 
 - **Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
 - **Modular Architecture**: Clean service layer for easy extensibility
@@ -17,6 +17,7 @@
 - **Advanced Configuration**: Enhanced quality and metadata profile management for Lidarr
 - **Robust Error Handling**: Improved retry logic and connection management
 - **Service Parity**: Identical functionality across both music management services
+- **Auto Update System**: includes a built-in auto-update system
 
 ## 🎵 Features
 
