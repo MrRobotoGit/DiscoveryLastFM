@@ -6,6 +6,7 @@ Abstract base class and data structures for music services
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+import time
 
 
 @dataclass
@@ -80,3 +81,32 @@ class MusicServiceBase(ABC):
     def get_service_info(self) -> Dict[str, Any]:
         """Info servizio per diagnostica"""
         pass
+    
+    @abstractmethod
+    def album_exists(self, mbid: str, added_albums: set) -> bool:
+        """Verifica se un album esiste già nel servizio"""
+        pass
+    
+    def get_config_requirements(self) -> Dict[str, Any]:
+        """Ritorna i requisiti di configurazione per questo servizio"""
+        return {"note": "Override in subclass for specific requirements"}
+    
+    def health_check(self) -> Dict[str, Any]:
+        """Esegue un health check completo del servizio"""
+        try:
+            connection_ok = self.test_connection()
+            service_info = self.get_service_info()
+            
+            return {
+                "status": "healthy" if connection_ok else "unhealthy",
+                "connection": connection_ok,
+                "service_info": service_info,
+                "timestamp": time.time()
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "connection": False,
+                "error": str(e),
+                "timestamp": time.time()
+            }

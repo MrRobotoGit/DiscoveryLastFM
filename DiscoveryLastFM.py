@@ -77,6 +77,10 @@ logging.basicConfig(
 )
 log = logging.getLogger("lfm2hp")
 
+# Riduci verbosità dei logger di requests per evitare duplicazione
+logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
+logging.getLogger("requests.packages.urllib3").setLevel(logging.WARNING)
+
 def dprint(msg):
     if DEBUG_PRINT:
         print(f"[DEBUG] {msg}")
@@ -161,48 +165,82 @@ def load_cache():
         return {"similar_cache": {}, "added_albums": set()}
 
 def save_cache(cache):
-    """Salva cache su file JSON"""
+    """Salva cache su file JSON con gestione memory efficiente"""
     try:
-        # Converte set in list per JSON
-        cache_copy = cache.copy()
-        if "added_albums" in cache_copy:
-            cache_copy["added_albums"] = list(cache_copy["added_albums"])
-            
-        with open(CACHE_FILE, "w") as f:
-            json.dump(cache_copy, f, indent=2)
+        # Converte set in list per JSON senza duplicare memoria
+        cache_to_save = {}
+        for key, value in cache.items():
+            if key == "added_albums" and isinstance(value, set):
+                cache_to_save[key] = list(value)
+            else:
+                cache_to_save[key] = value
+        
+        # Salva in file temporaneo poi rinomina per atomicità
+        temp_file = CACHE_FILE.with_suffix('.tmp')
+        with open(temp_file, "w") as f:
+            json.dump(cache_to_save, f, indent=2, separators=(',', ':'))
+        
+        # Rinomina atomicamente
+        temp_file.replace(CACHE_FILE)
+        
     except Exception as e:
         log.error(f"Errore salvataggio cache: {e}")
+        # Cleanup temp file se esiste
+        if 'temp_file' in locals() and temp_file.exists():
+            temp_file.unlink()
 
 def recent_artists():
-    """Ottiene artisti ascoltati di recente - IDENTICA"""
+    """Ottiene artisti ascoltati di recente con gestione memoria ottimizzata"""
     end = int(time.time())
     start = end - (RECENT_MONTHS * 30 * 24 * 3600)
     
-    js = lf_request("user.getRecentTracks", user=LASTFM_USERNAME, from_=start, to_=end, limit=1000)
-    if not js:
-        return []
-    
-    tracks = js.get("recenttracks", {}).get("track", [])
+    # Gestione paginazione per grandi dataset
     artist_plays = defaultdict(int)
+    page = 1
+    total_pages = 1
+    processed_tracks = 0
     
-    for t in tracks:
-        if isinstance(t, dict):
-            artist = t.get("artist", {})
-            name = artist.get("#text", "") if isinstance(artist, dict) else str(artist)
-            if name:
-                artist_plays[name] += 1
+    while page <= total_pages and page <= 10:  # Max 10 pagine per sicurezza
+        js = lf_request("user.getRecentTracks", user=LASTFM_USERNAME, from_=start, to_=end, limit=200, page=page)
+        if not js:
+            break
+            
+        recenttracks = js.get("recenttracks", {})
+        tracks = recenttracks.get("track", [])
+        
+        # Aggiorna total_pages dalla prima risposta
+        if page == 1:
+            attr = recenttracks.get("@attr", {})
+            total_pages = min(int(attr.get("totalPages", 1)), 10)  # Limite pagine
+            log.info(f"Processing {attr.get('total', 0)} recent tracks across {total_pages} pages")
+        
+        # Processa tracks della pagina corrente
+        for t in tracks:
+            if isinstance(t, dict):
+                artist = t.get("artist", {})
+                name = artist.get("#text", "") if isinstance(artist, dict) else str(artist)
+                if name:
+                    artist_plays[name] += 1
+                    processed_tracks += 1
+        
+        page += 1
     
-    # Ottieni MBID per ogni artista
+    log.info(f"Processed {processed_tracks} tracks from {len(artist_plays)} unique artists")
+    
+    # Filtro e ottieni MBID per artisti con abbastanza plays
     result = []
-    for name, plays in artist_plays.items():
-        if plays >= MIN_PLAYS:
-            js = lf_request("artist.getInfo", artist=name)
-            if js:
-                mbid = js.get("artist", {}).get("mbid")
-                if mbid:
-                    result.append((name, mbid))
+    qualifying_artists = [(name, plays) for name, plays in artist_plays.items() if plays >= MIN_PLAYS]
+    log.info(f"Found {len(qualifying_artists)} artists with ≥{MIN_PLAYS} plays")
     
-    log.info(f"Trovati {len(result)} artisti recenti con ≥{MIN_PLAYS} riproduzioni")
+    for name, plays in qualifying_artists:
+        js = lf_request("artist.getInfo", artist=name)
+        if js:
+            mbid = js.get("artist", {}).get("mbid")
+            if mbid:
+                result.append((name, mbid))
+                log.debug(f"Artist {name}: {plays} plays, MBID: {mbid}")
+    
+    log.info(f"Final result: {len(result)} artists with valid MBIDs")
     return result
 
 def cached_similars(cache, aid):
@@ -261,9 +299,41 @@ def is_studio_rg(rg_id):
 
 # ────────────── MUSIC SERVICE INTEGRATION ──────────────
 def validate_configuration():
-    """Validazione estesa per tutti i servizi"""
+    """Validazione estesa per tutti i servizi con checks dettagliati"""
     config_dict = {k: v for k, v in globals().items() if k.isupper()}
-    service_type = config_dict.get("MUSIC_SERVICE", "headphones")
+    service_type = config_dict.get("MUSIC_SERVICE", "headphones").lower()
+    
+    log.info("Starting configuration validation...")
+    
+    # Validazione parametri base
+    required_base = ["LASTFM_USERNAME", "LASTFM_API_KEY"]
+    missing_base = [k for k in required_base if not config_dict.get(k)]
+    if missing_base:
+        raise ConfigurationError(f"Missing base configuration: {missing_base}")
+    
+    # Validazione parametri numerici
+    numeric_params = {
+        "RECENT_MONTHS": (1, 12),
+        "MIN_PLAYS": (1, 1000),
+        "MAX_SIMILAR_PER_ART": (1, 100),
+        "MAX_POP_ALBUMS": (1, 50),
+        "CACHE_TTL_HOURS": (1, 168)  # 1 settimana max
+    }
+    
+    for param, (min_val, max_val) in numeric_params.items():
+        value = config_dict.get(param)
+        if value is not None:
+            if not isinstance(value, (int, float)) or not (min_val <= value <= max_val):
+                raise ConfigurationError(f"{param} must be between {min_val} and {max_val}, got {value}")
+    
+    # Validazione rate limiting
+    request_limit = config_dict.get("REQUEST_LIMIT", 1/5)
+    if request_limit <= 0 or request_limit > 10:
+        raise ConfigurationError(f"REQUEST_LIMIT must be between 0 and 10, got {request_limit}")
+    
+    mbz_delay = config_dict.get("MBZ_DELAY", 1.1)
+    if mbz_delay < 0.5 or mbz_delay > 10:
+        raise ConfigurationError(f"MBZ_DELAY must be between 0.5 and 10, got {mbz_delay}")
     
     # Validazione servizio specifico
     if not MusicServiceFactory.validate_service_config(service_type, config_dict):
@@ -273,7 +343,10 @@ def validate_configuration():
             f"Available services: {available}"
         )
     
-    log.info(f"Configuration validated for {service_type}")
+    log.info(f"Configuration validated successfully for {service_type}")
+    log.info(f"- Discovery scope: {config_dict.get('RECENT_MONTHS', 3)} months, {config_dict.get('MIN_PLAYS', 20)} min plays")
+    log.info(f"- Rate limits: LastFM {request_limit}/s, MusicBrainz {mbz_delay}s delay")
+    log.info(f"- Processing limits: {config_dict.get('MAX_SIMILAR_PER_ART', 20)} similar artists, {config_dict.get('MAX_POP_ALBUMS', 5)} albums each")
 
 def sync():
     """Sync function modificata per service abstraction"""
@@ -310,21 +383,32 @@ def sync():
             artist_info = ArtistInfo(mbid=aid, name=name)
             
             # Aggiunta artista (STESSA LOGICA, diversa implementazione)
-            if not music_service.add_artist(artist_info):
-                log.error(f"Impossibile aggiungere l'artista {name} ({aid})")
+            try:
+                if not music_service.add_artist(artist_info):
+                    log.error(f"Impossibile aggiungere l'artista {name} ({aid})")
+                    error_count += 1
+                    continue
+            except ServiceError as e:
+                log.error(f"Service error adding artist {name}: {e}")
+                error_count += 1
+                continue
+            except Exception as e:
+                log.error(f"Unexpected error adding artist {name}: {e}")
                 error_count += 1
                 continue
             
             # Refresh artista
             music_service.refresh_artist(aid)
             
-            # Gestione artisti simili - WORKFLOW IDENTICO
+            # Gestione artisti simili - WORKFLOW IDENTICO (con cache ottimizzata)
             sims = cached_similars(cache, aid)
             if not sims:
                 log.info(f"Cerco artisti simili per {name}...")
                 js = lf_request("artist.getSimilar", mbid=aid, limit=50)
                 sims = js.get("similarartists", {}).get("artist", []) if js else []
-                cache["similar_cache"][aid] = {"ts": time.time(), "data": sims}
+                # Salva in cache solo se abbiamo dati validi
+                if sims:
+                    cache["similar_cache"][aid] = {"ts": time.time(), "data": sims}
 
             proc = 0
             for s in sims:
@@ -351,8 +435,17 @@ def sync():
 
                 # Aggiunta artista simile con service layer
                 similar_artist_info = ArtistInfo(mbid=sid, name=sim_name)
-                if not music_service.add_artist(similar_artist_info):
-                    log.error(f"Impossibile aggiungere l'artista simile {sim_name} ({sid})")
+                try:
+                    if not music_service.add_artist(similar_artist_info):
+                        log.error(f"Impossibile aggiungere l'artista simile {sim_name} ({sid})")
+                        error_count += 1
+                        continue
+                except ServiceError as e:
+                    log.error(f"Service error adding similar artist {sim_name}: {e}")
+                    error_count += 1
+                    continue
+                except Exception as e:
+                    log.error(f"Unexpected error adding similar artist {sim_name}: {e}")
                     error_count += 1
                     continue
                 
@@ -378,18 +471,10 @@ def sync():
                         continue
 
                     # Controlla esistenza album usando service layer
-                    if hasattr(music_service, 'album_exists'):
-                        # Usa metodo specifico del servizio se disponibile
-                        if music_service.album_exists(rg_id, added_albums) or music_service.album_exists(rel_id, added_albums):
-                            log.debug(f"Album {rel_id} già esistente")
-                            skipped_count += 1
-                            continue
-                    else:
-                        # Fallback per check esistenza
-                        if rg_id in added_albums or rel_id in added_albums:
-                            log.debug(f"Album {rel_id} già esistente (cache)")
-                            skipped_count += 1
-                            continue
+                    if music_service.album_exists(rg_id, added_albums) or music_service.album_exists(rel_id, added_albums):
+                        log.debug(f"Album {rel_id} già esistente")
+                        skipped_count += 1
+                        continue
 
                     studio = is_studio_rg(rg_id)
                     if studio is False:
@@ -414,18 +499,25 @@ def sync():
                             log.info(f"Aggiungo album {rg_id}")
                         
                         # Aggiunta album con service layer
-                        if music_service.add_album(album_info):
-                            # Queue album
-                            music_service.queue_album(album_info, force_new=True)
-                            added_albums.add(album_info.mbid)
-                            success_count += 1
-                            
-                            # Salva cache dopo ogni album aggiunto
-                            cache["added_albums"] = list(added_albums)
-                            save_cache(cache)
-                        else:
+                        try:
+                            if music_service.add_album(album_info):
+                                # Queue album
+                                if music_service.queue_album(album_info, force_new=True):
+                                    added_albums.add(album_info.mbid)
+                                    success_count += 1
+                                    
+                                    # Nota: cache salvata in batch alla fine per performance
+                                else:
+                                    log.warning(f"Album {album_info.title} aggiunto ma queue fallita")
+                            else:
+                                error_count += 1
+                                log.error(f"Fallito add album {album_info.title}")
+                        except ServiceError as e:
                             error_count += 1
-                            log.error(f"Errore durante l'aggiunta dell'album {album_info.mbid}")
+                            log.error(f"Service error adding album {album_info.title}: {e}")
+                        except Exception as e:
+                            error_count += 1
+                            log.error(f"Unexpected error adding album {album_info.title}: {e}")
 
                     except Exception as e:
                         error_count += 1
@@ -434,7 +526,14 @@ def sync():
         # Force search finale
         if fallback_ids:
             log.info(f"Aggiornamento finale per {len(fallback_ids)} album...")
-            music_service.force_search()
+            try:
+                music_service.force_search()
+            except ServiceError as e:
+                log.error(f"Force search failed: {e}")
+        
+        # Salvataggio cache finale per performance
+        cache["added_albums"] = list(added_albums)
+        save_cache(cache)
         
         # Statistiche IDENTICHE
         elapsed_time = time.time() - start_time
@@ -451,9 +550,14 @@ def sync():
         log.error(f"Unexpected error: {e}")
         raise
     finally:
-        # Salvataggio cache IDENTICO
+        # Salvataggio cache finale
         cache["added_albums"] = list(added_albums)
         save_cache(cache)
+        
+        # Cleanup memoria
+        import gc
+        gc.collect()
+        log.debug("Memory cleanup completed")
 
 # Entry point con validation
 if __name__ == "__main__":

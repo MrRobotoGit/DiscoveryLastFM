@@ -36,10 +36,15 @@ LIDARR_METADATA_PROFILE_ID = 1  # ID of metadata profile (1=Standard, 2=None)
 LIDARR_MONITOR_MODE = "all"  # "all", "future", "missing", "existing", "first", "latest", "none"
 LIDARR_SEARCH_ON_ADD = True  # Auto-search when adding artists/albums
 
-# Lidarr Advanced Options
+# Lidarr Advanced Options (UPDATED for better timeout handling)
 LIDARR_MAX_RETRIES = 3
 LIDARR_RETRY_DELAY = 5
-LIDARR_TIMEOUT = 60
+LIDARR_TIMEOUT = 60  # Base timeout - specific operations use longer timeouts automatically
+
+# Performance Notes:
+# - artist/lookup and album/lookup operations automatically use 300s timeout
+# - Slow operations (>30s) are logged as warnings  
+# - Retry delays are increased for lookup timeouts to give server more time
 
 # === DISCOVERY PARAMETERS ===
 RECENT_MONTHS = 3              # Months of recent plays to analyze

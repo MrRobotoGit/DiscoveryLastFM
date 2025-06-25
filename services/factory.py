@@ -28,26 +28,34 @@ class MusicServiceFactory:
         """Crea un servizio con validazione completa"""
         service_type = service_type.lower()
         
+        # Verifica che i servizi siano stati registrati
+        if not cls._services:
+            raise ConfigurationError("No services registered. Check service imports.")
+        
         if service_type not in cls._services:
-            available = ", ".join(cls._services.keys())
+            available = ", ".join(cls._services.keys()) if cls._services else "none"
             raise ConfigurationError(f"Unknown service '{service_type}'. Available: {available}")
         
         service_class = cls._services[service_type]
         
         try:
             # Validazione configurazione prima dell'instanziazione
+            log.debug(f"Validating configuration for {service_type}...")
             if not cls.validate_service_config(service_type, config):
                 raise ConfigurationError(f"Invalid configuration for {service_type}")
             
             log.info(f"Creating {service_type} service...")
             service = service_class(config)
             
-            # Test connessione durante la creazione
+            # Test connessione durante la creazione con health check
             log.info(f"Testing {service_type} connection...")
-            if not service.test_connection():
-                raise ServiceError(f"Cannot connect to {service_type}", service_type)
+            health = service.health_check()
+            if health["status"] != "healthy":
+                error_msg = health.get("error", "Connection failed")
+                raise ServiceError(f"Cannot connect to {service_type}: {error_msg}", service_type)
             
             log.info(f"Successfully initialized {service_type} service")
+            log.debug(f"Service health: {health}")
             return service
             
         except (ConfigurationError, ServiceError):
@@ -101,18 +109,36 @@ class MusicServiceFactory:
 # Importa e registra i servizi disponibili
 def _register_available_services():
     """Registra automaticamente i servizi disponibili"""
+    services_registered = []
+    
     try:
         from .headphones import HeadphonesService
         MusicServiceFactory.register_service("headphones", HeadphonesService)
+        services_registered.append("headphones")
     except ImportError as e:
-        log.warning(f"HeadphonesService not available: {e}")
+        log.error(f"HeadphonesService not available: {e}")
+    except Exception as e:
+        log.error(f"Failed to register HeadphonesService: {e}")
     
     try:
         from .lidarr import LidarrService  
         MusicServiceFactory.register_service("lidarr", LidarrService)
+        services_registered.append("lidarr")
     except ImportError as e:
-        log.warning(f"LidarrService not available: {e}")
+        log.error(f"LidarrService not available: {e}")
+    except Exception as e:
+        log.error(f"Failed to register LidarrService: {e}")
+    
+    if not services_registered:
+        raise ImportError("No music services could be registered")
+    
+    log.info(f"Successfully registered services: {', '.join(services_registered)}")
+    return services_registered
 
 
-# Registra servizi all'import del modulo
-_register_available_services()
+# Registra servizi all'import del modulo con error handling
+try:
+    _register_available_services()
+except Exception as e:
+    log.critical(f"Service registration failed: {e}")
+    # Continue but log critical error
