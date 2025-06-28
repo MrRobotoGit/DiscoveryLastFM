@@ -77,9 +77,8 @@
 - **Option A**: [Headphones](https://github.com/rembo10/headphones) installation with API access
 - **Option B**: [Lidarr](https://github.com/Lidarr/Lidarr) installation with API access
 
-> **💡 Tip**: Lidarr is recommended for new users due to its modern interface and active development
 
-## 🐳 Quick Start with Docker (Recommended)
+## 🐳 Quick Start with Docker
 
 **The easiest way to run DiscoveryLastFM is using Docker!**
 
@@ -139,7 +138,7 @@ For advanced users who prefer running without Docker:
    LIDARR_METADATA_PROFILE_ID = 1  # 1=Standard
    ```
 
-   **⚠️ Important**: Never commit `config.py` to version control as it contains sensitive API keys!
+
 
 ## ⚙️ Configuration
 
