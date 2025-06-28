@@ -85,6 +85,16 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mrrobotogit/discoverylastfm)](https://hub.docker.com/r/mrrobotogit/discoverylastfm)
 [![Docker Image Size](https://img.shields.io/docker/image-size/mrrobotogit/discoverylastfm/latest)](https://hub.docker.com/r/mrrobotogit/discoverylastfm)
 
+### Automated Setup Script
+
+```bash
+# Clone the repository
+git clone https://github.com/MrRobotoGit/DiscoveryLastFM-Docker.git
+cd DiscoveryLastFM-Docker
+
+# Run the automated setup
+./scripts/setup-docker.sh
+```
 
 **🔗 [Complete Docker Guide & Examples](https://github.com/MrRobotoGit/DiscoveryLastFM-Docker)**
 
