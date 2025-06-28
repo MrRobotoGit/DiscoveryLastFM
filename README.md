@@ -87,51 +87,7 @@
 [![Docker Image Size](https://img.shields.io/docker/image-size/mrrobotogit/discoverylastfm/latest)](https://hub.docker.com/r/mrrobotogit/discoverylastfm)
 
 
-### 🎧 With Headphones (Recommended)
-```bash
-docker run -d \
-  --name discoverylastfm \
-  -e LASTFM_USERNAME=your_username \
-  -e LASTFM_API_KEY=your_api_key \
-  -e MUSIC_SERVICE=headphones \
-  -e HP_API_KEY=your_headphones_key \
-  -e HP_ENDPOINT=http://your-headphones:8181 \
-  mrrobotogit/discoverylastfm:latest
-```
-
-### 🚀 With Lidarr 
-```bash
-docker run -d \
-  --name discoverylastfm \
-  -e LASTFM_USERNAME=your_username \
-  -e LASTFM_API_KEY=your_api_key \
-  -e MUSIC_SERVICE=lidarr \
-  -e LIDARR_API_KEY=your_lidarr_key \
-  -e LIDARR_ENDPOINT=http://your-lidarr:8686 \
-  mrrobotogit/discoverylastfm:latest
-```
-
-### 📦 Docker Compose Example
-```yaml
-version: '3.8'
-services:
-  discoverylastfm:
-    image: mrrobotogit/discoverylastfm:latest
-    environment:
-      - LASTFM_USERNAME=your_username
-      - LASTFM_API_KEY=your_api_key
-      # For Lidarr:
-      - MUSIC_SERVICE=lidarr
-      - LIDARR_API_KEY=your_key
-      - LIDARR_ENDPOINT=http://lidarr:8686
-      # For Headphones (alternative):
-      # - MUSIC_SERVICE=headphones
-      # - HP_API_KEY=your_key
-      # - HP_ENDPOINT=http://headphones:8181
-    restart: unless-stopped
-```
-
-**🔗 [Complete Docker Guide & Examples](https://hub.docker.com/r/mrrobotogit/discoverylastfm)**
+**🔗 [Complete Docker Guide & Examples](https://github.com/MrRobotoGit/DiscoveryLastFM)**
 
 ---
 
