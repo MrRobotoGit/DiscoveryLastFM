@@ -86,7 +86,7 @@
 [![Docker Image Size](https://img.shields.io/docker/image-size/mrrobotogit/discoverylastfm/latest)](https://hub.docker.com/r/mrrobotogit/discoverylastfm)
 
 
-**🔗 [Complete Docker Guide & Examples](https://github.com/MrRobotoGit/DiscoveryLastFM)**
+**🔗 [Complete Docker Guide & Examples](https://github.com/MrRobotoGit/DiscoveryLastFM-Docker)**
 
 ---
 
