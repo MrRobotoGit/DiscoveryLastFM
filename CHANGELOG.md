@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2025-11-13
+
+### 🐛 Bug Fixes
+
+**Robust Retry Logic for API Calls**
+- Add retry mechanism (3 attempts) to mbz_request() and lf_request()
+- Handle ConnectionResetError, Timeout, and ConnectionError gracefully
+- Implement exponential backoff for failed attempts
+- Add rate limiting (HTTP 429) handling
+- Fix fatal crashes from intermittent connection issues
+
+### 🔧 Improvements
+- Enhanced error logging for connection issues
+- Improved resilience for long-running sync operations
+
 ## [2.1.0] - 2025-06-25
 
 ### 🚀 Major New Feature: GitHub Auto-Update System

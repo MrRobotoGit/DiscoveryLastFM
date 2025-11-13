@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DiscoveryLastFM.py · v2.1.0
+DiscoveryLastFM.py · v2.1.1
 – Integrazione Lidarr/Headphones tramite service layer modulare
 – Supporto per entrambi i servizi con switch via configurazione
 – Sistema auto-update GitHub con backup e rollback
