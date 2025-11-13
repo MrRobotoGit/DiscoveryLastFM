@@ -2,22 +2,27 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1.0-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.1-brightgreen.svg)](CHANGELOG.md)
 [![Headphones](https://img.shields.io/badge/service-Headphones-blue.svg)](https://github.com/rembo10/headphones)
 [![Lidarr](https://img.shields.io/badge/service-Lidarr-orange.svg)](https://github.com/Lidarr/Lidarr)
 [![Star](https://img.shields.io/github/stars/MrRobotoGit/DiscoveryLastFM?style=social)](https://github.com/MrRobotoGit/DiscoveryLastFM)
 
 🎵 **Modern music discovery tool** that integrates Last.fm, MusicBrainz, and **both Headphones & Lidarr** to automatically discover and queue new albums based on your listening history.
 
-## 🚀 What's New in v2.1.0
+## 🚀 What's New in v2.1.1
 
-- **Dual Service Support**: Choose between **Headphones** or **Lidarr** with a single configuration change
+### Bug Fixes & Improvements
+- **Robust Retry Logic**: Added retry mechanism (3 attempts) for all API calls
+- **Connection Error Handling**: Gracefully handles ConnectionResetError, Timeout, and ConnectionError
+- **Exponential Backoff**: Implements exponential backoff strategy for failed attempts
+- **Rate Limiting**: Improved HTTP 429 rate limit handling
+- **Enhanced Stability**: Fixes fatal crashes from intermittent connection issues
+- **Better Logging**: Enhanced error logging for connection troubleshooting
+
+### Previous v2.1.0 Features
+- **Dual Service Support**: Choose between **Headphones** or **Lidarr**
 - **Modular Architecture**: Clean service layer for easy extensibility
-- **Zero Breaking Changes**: Existing Headphones users continue without modifications
-- **Advanced Configuration**: Enhanced quality and metadata profile management for Lidarr
-- **Robust Error Handling**: Improved retry logic and connection management
-- **Service Parity**: Identical functionality across both music management services
-- **Auto Update System**: includes a built-in auto-update system
+- **Auto Update System**: Built-in auto-update from GitHub releases
 
 ## 🎵 Features
 
