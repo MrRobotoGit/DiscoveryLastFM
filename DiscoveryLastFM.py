@@ -104,7 +104,7 @@ def rate_limited(delay):
 
 @rate_limited(REQUEST_LIMIT)
 def lf_request(method, **params):
-    # Last.fm API call - IDENTICA alla v1.7.x
+    # Last.fm API call con gestione retry robusta
     for alt, real in (("from_", "from"), ("to_", "to")):
         if alt in params:
             params[real] = params.pop(alt)
@@ -112,41 +112,125 @@ def lf_request(method, **params):
     base = "https://ws.audioscrobbler.com/2.0/"
     params |= {"method": method, "api_key": LASTFM_API_KEY, "format": "json"}
     
-    dprint(f"LF  → {base}?{urllib.parse.urlencode(params)}")
-    r = requests.get(base, params=params, timeout=15)
-    dprint(f"LF  ← {r.status_code}")
+    # Configurazione retry
+    max_retries = 3
+    retry_delay = 2
     
-    if r.status_code != 200:
-        log.warning(f"Last.fm HTTP {r.status_code}: {r.text[:200]}")
-        return None
+    for attempt in range(max_retries):
+        try:
+            dprint(f"LF  → {base}?{urllib.parse.urlencode(params)} (tentativo {attempt+1}/{max_retries})")
+            r = requests.get(base, params=params, timeout=15)
+            dprint(f"LF  ← {r.status_code}")
+            
+            # Rate limiting
+            if r.status_code == 429 and attempt < max_retries - 1:
+                wait_time = int(r.headers.get('Retry-After', retry_delay * 2))
+                log.warning(f"Rate limit Last.fm, attendo {wait_time}s")
+                time.sleep(wait_time)
+                continue
+            
+            if r.status_code != 200:
+                if attempt < max_retries - 1:
+                    log.warning(f"Last.fm HTTP {r.status_code}, tentativo {attempt+1}/{max_retries}")
+                    time.sleep(retry_delay * (attempt + 1))
+                    continue
+                else:
+                    log.warning(f"Last.fm HTTP {r.status_code}: {r.text[:200]}")
+                    return None
+            
+            try:
+                return r.json()
+            except:
+                if attempt < max_retries - 1:
+                    log.warning(f"Last.fm invalid JSON, tentativo {attempt+1}/{max_retries}")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    log.warning(f"Last.fm invalid JSON: {r.text[:200]}")
+                    return None
+                    
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError, ConnectionResetError) as e:
+            if attempt < max_retries - 1:
+                log.warning(f"Last.fm connection error: {e}, tentativo {attempt+1}/{max_retries}")
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            else:
+                log.error(f"Last.fm connection failed dopo {max_retries} tentativi: {e}")
+                return None
+        except Exception as e:
+            if attempt < max_retries - 1:
+                log.warning(f"Last.fm error: {e}, tentativo {attempt+1}/{max_retries}")
+                time.sleep(retry_delay * (attempt + 1))
+            else:
+                log.error(f"Last.fm error dopo {max_retries} tentativi: {e}")
+                return None
     
-    try:
-        return r.json()
-    except:
-        log.warning(f"Last.fm invalid JSON: {r.text[:200]}")
-        return None
+    return None
 
 @rate_limited(MBZ_DELAY)
 def mbz_request(path, **params):
-    # MusicBrainz API call - IDENTICA alla v1.7.x
+    # MusicBrainz API call con gestione retry robusta
     base = "https://musicbrainz.org/ws/2/"
-    params |= {"fmt": "json"}
+    params.setdefault("fmt", "json")
     
     headers = {"User-Agent": "DiscoveryLastFM/2.0.0 ( mrroboto@example.com )"}
     
-    dprint(f"MBZ → {base}{path}?{urllib.parse.urlencode(params)}")
-    r = requests.get(base + path, params=params, headers=headers, timeout=30)
-    dprint(f"MBZ ← {r.status_code}")
+    # Configurazione retry per MusicBrainz
+    max_retries = 3
+    retry_delay = 2  # secondi
     
-    if r.status_code != 200:
-        log.warning(f"MusicBrainz HTTP {r.status_code}: {r.text[:200]}")
-        return None
+    for attempt in range(max_retries):
+        try:
+            dprint(f"MBZ → {base}{path}?{urllib.parse.urlencode(params)} (tentativo {attempt+1}/{max_retries})")
+            r = requests.get(
+                base + path, params=params, headers=headers, timeout=30
+            )
+            dprint(f"MBZ ← {r.status_code}")
+            
+            # Gestione del rate limiting di MusicBrainz (codice 429)
+            if r.status_code == 429 and attempt < max_retries - 1:
+                wait_time = int(r.headers.get('Retry-After', retry_delay * 2))
+                log.warning(f"Rate limit MusicBrainz, attendo {wait_time}s")
+                time.sleep(wait_time)
+                continue
+                
+            if r.status_code != 200:
+                if attempt < max_retries - 1:
+                    log.warning(f"MusicBrainz HTTP {r.status_code}, tentativo {attempt+1}/{max_retries}")
+                    time.sleep(retry_delay * (attempt + 1))
+                    continue
+                else:
+                    log.warning(f"MusicBrainz HTTP {r.status_code}: {r.text[:200]}")
+                    return None
+                    
+            try:
+                return r.json()
+            except:
+                if attempt < max_retries - 1:
+                    log.warning(f"MusicBrainz invalid JSON, tentativo {attempt+1}/{max_retries}")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    log.warning(f"MusicBrainz invalid JSON: {r.text[:200]}")
+                    return None
+                
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError, ConnectionResetError) as e:
+            if attempt < max_retries - 1:
+                log.warning(f"MusicBrainz connection error: {e}, tentativo {attempt+1}/{max_retries}")
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            else:
+                log.error(f"MusicBrainz connection failed dopo {max_retries} tentativi: {e}")
+                return None
+        except Exception as e:
+            if attempt < max_retries - 1:
+                log.warning(f"MusicBrainz error: {e}, tentativo {attempt+1}/{max_retries}")
+                time.sleep(retry_delay * (attempt + 1))
+            else:
+                log.error(f"MusicBrainz error dopo {max_retries} tentativi: {e}")
+                return None
     
-    try:
-        return r.json()
-    except:
-        log.warning(f"MusicBrainz invalid JSON: {r.text[:200]}")
-        return None
+    return None
 
 # ────────────── CORE FUNCTIONS (IDENTICHE) ──────────────
 def load_cache():
