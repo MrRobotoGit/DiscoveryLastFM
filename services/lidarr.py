@@ -323,7 +323,7 @@ class LidarrService(MusicServiceBase):
             # Merge con dati Lidarr
             payload.update({
                 k: v for k, v in album_data.items()
-                if k in ["title", "releaseDate", "images", "links", "genres", "disambiguation"]
+                if k in ["title", "releaseDate", "images", "links", "genres", "disambiguation", "artist", "releases"]
             })
             
             result = self._lidarr_request("POST", "album", json=payload)
